@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="../Css/login.css">
+  <title>Login | ProntoGest</title>
+</head>
+
+<body>
+  <div class="login-container">
+    <div class="login-card">
+
+      <h1 class="logo">
+        <span class="logo-main">ProntoGest</span>
+      </h1>
+
+      <h2>Sistema de Gestão Clínica</h2>
+
+      <form id="loginForm">
+        <div class="input-group">
+          <input id="email" type="email" placeholder="Email" required>
+        </div>
+
+        <div class="input-group">
+          <input id="senha" type="password" placeholder="Senha" required>
+        </div>
+
+        <div class="options">
+          <label>
+            <input id="lembrar" type="checkbox">
+            Lembrar login e senha
+          </label>
+        </div>
+
+        <button id="loginBtn" type="submit">Entrar</button>
+      </form>
+
+    </div>
+  </div>
+
+  <div id="toastRoot" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="../Js/api.js"></script>
+  <script src="../Js/login.js"></script>
+</body>
+</html>

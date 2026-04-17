@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ORDEM CERTA: base primeiro, página depois -->
+  <link rel="stylesheet" href="../Css/base.css">
+  <link rel="stylesheet" href="../Css/consultas.css">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <title>Agenda - ProntoGest</title>
+</head>
+
+<body>
+  <!-- SIDEBAR -->
+<div class="sidebar">
+
+  <div class="icon">
+    <img src="../img/logo.png" class="logo-sidebar">
+
+  </div>
+
+
+   
+    <a href="./dashboard.html">Dashboard</a>
+    <a href="./pacientes.html">Cadastro</a>
+    <a href="./triagem.html">Triagem</a>
+    <a href="./prontuario.html">Prontuário</a>
+    <a href="./prescricoes.html">Prescrições</a>
+    <a href="./leitos.html">Leitos</a>
+    <a href="./farmacia.html">Farmácia</a>
+    <a href="./medicamentos.html">Medicamentos Padrão</a>
+    <a href="./consultas.html">Agenda</a>
+    <a href="./relatorios.html">Relatórios</a>
+    <a href="./faturamento.html" class="admin-only">Faturamento</a>
+    <a href="./lista-pacientes.html">Lista de Pacientes</a>
+    <a href="./funcionarios-cadastro.html" class="admin-only">Cadastro de Funcionários</a>
+    <a href="./funcionarios-lista.html" class="admin-only">Funcionários</a>
+
+    <button class="btn-sair" onclick="logout()">Sair</button>
+  </div>
+
+  <!-- CONTEÚDO -->
+  <div class="content">
+    <h1>Agenda de Consultas</h1>
+
+    <div class="card card-sgh-md">
+      <div class="linha-form">
+        <div>
+          <label>Paciente:</label>
+          <select id="pacienteSelect">
+            <option value="">Selecione um paciente...</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Data:</label>
+          <input type="date" id="data">
+        </div>
+      </div>
+
+      <div class="linha-form">
+        <div>
+          <label>Hora:</label>
+          <input type="time" id="hora">
+        </div>
+
+        <div>
+          <label>Tipo de Consulta:</label>
+          <select id="tipoConsulta">
+            <option value="">Selecione...</option>
+            <option value="Consulta Médica">Consulta Médica</option>
+            <option value="Procedimento">Procedimento</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="button" onclick="adicionarConsulta()">Agendar</button>
+    </div>
+
+    <div class="lista" id="listaConsultas">
+      <h2>Consultas Agendadas</h2>
+    </div>
+  </div>
+  <script src="../Js/api.js"></script>
+  <script src="../Js/auth-guard.js"></script>
+  <script src="../Js/menu-guard.js"></script>
+  <script src="../Js/logout.js"></script>
+  <script src="../Js/consultas.js"></script>
+  
+  <script src="../Js/page-user-box.js"></script>
+</body>
+
+</html>
+

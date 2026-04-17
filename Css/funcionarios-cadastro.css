@@ -1,0 +1,81 @@
+@charset "UTF-8";
+.content h1 {
+  text-align: center;
+  font-size: 36px;
+  color: #0a1a33;
+  margin: 0 0 22px;
+}
+.func-card {
+  max-width: 900px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 20px;
+  padding: 30px 40px;
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e6eef9;
+  overflow-x: hidden;
+}
+#formFuncionario {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+#formFuncionario label {
+  display: block;
+  font-weight: 700;
+  color: #0a1a33;
+  margin-top: 4px;
+}
+#formFuncionario input[type="text"],
+#formFuncionario input[type="email"],
+#formFuncionario input[type="password"],
+#formFuncionario select,
+#formFuncionario input[type="file"] {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d0d7e2;
+  border-radius: 10px;
+  background: #f8fafc;
+  font-size: 14px;
+  outline: none;
+}
+#formFuncionario input:focus,
+#formFuncionario select:focus {
+  border-color: #0A66C2;
+  box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.15);
+}
+#formFuncionario br {
+  display: none;
+}
+#formFuncionario button[type="submit"] {
+  width: 240px;
+  padding: 12px 18px;
+  background: #0A66C2;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  align-self: center;
+  margin-top: 10px;
+}
+#formFuncionario button[type="submit"]:hover {
+  background: #084d94;
+}
+@media (max-width: 900px) {
+  .func-card {
+    padding: 22px 18px;
+    border-radius: 16px;
+  }
+}
+@media (max-width: 650px) {
+  #formFuncionario {
+    max-width: 100%;
+  }
+  #formFuncionario button[type="submit"] {
+    width: 100%;
+  }
+}

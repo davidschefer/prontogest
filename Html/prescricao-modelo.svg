@@ -1,0 +1,81 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="1754" viewBox="0 0 1240 1754">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .line { stroke: #cbd5e1; stroke-width: 1; }
+      .bold { stroke: #94a3b8; stroke-width: 2; }
+      .text { font-family: Arial, sans-serif; fill: #111827; }
+      .muted { fill: #6b7280; font-size: 16px; }
+      .label { font-size: 18px; font-weight: 700; }
+      .title { font-size: 28px; font-weight: 700; }
+      .rx { font-size: 64px; font-weight: 700; fill: #0a66c2; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1240" height="1754" />
+
+  <!-- Header -->
+  <rect x="80" y="60" width="1080" height="140" fill="#f8fafc" stroke="#e2e8f0" />
+  <rect x="100" y="80" width="120" height="100" fill="#e2e8f0" stroke="#cbd5e1" />
+  <text class="text title" x="240" y="115">Clinica / Hospital</text>
+  <text class="text muted" x="240" y="145">Endereco • Telefone • Email</text>
+  <text class="text muted" x="240" y="175">CNPJ: 00.000.000/0000-00</text>
+
+  <!-- Patient Info -->
+  <text class="text label" x="80" y="250">Dados do Paciente</text>
+  <line class="bold" x1="80" y1="260" x2="1160" y2="260" />
+
+  <text class="text muted" x="80" y="300">Nome:</text>
+  <line class="line" x1="150" y1="305" x2="760" y2="305" />
+
+  <text class="text muted" x="800" y="300">Data:</text>
+  <line class="line" x1="860" y1="305" x2="1160" y2="305" />
+
+  <text class="text muted" x="80" y="350">CPF:</text>
+  <line class="line" x1="130" y1="355" x2="380" y2="355" />
+
+  <text class="text muted" x="420" y="350">Nascimento:</text>
+  <line class="line" x1="520" y1="355" x2="760" y2="355" />
+
+  <text class="text muted" x="800" y="350">Convenio:</text>
+  <line class="line" x1="900" y1="355" x2="1160" y2="355" />
+
+  <text class="text muted" x="80" y="400">Endereco:</text>
+  <line class="line" x1="170" y1="405" x2="1160" y2="405" />
+
+  <!-- Rx -->
+  <text class="text rx" x="100" y="510">R</text>
+  <text class="text rx" x="145" y="510">x</text>
+
+  <!-- Prescription Lines -->
+  <text class="text label" x="80" y="560">Prescricao</text>
+  <line class="bold" x1="80" y1="570" x2="1160" y2="570" />
+
+  <line class="line" x1="80" y1="630" x2="1160" y2="630" />
+  <line class="line" x1="80" y1="690" x2="1160" y2="690" />
+  <line class="line" x1="80" y1="750" x2="1160" y2="750" />
+  <line class="line" x1="80" y1="810" x2="1160" y2="810" />
+  <line class="line" x1="80" y1="870" x2="1160" y2="870" />
+  <line class="line" x1="80" y1="930" x2="1160" y2="930" />
+  <line class="line" x1="80" y1="990" x2="1160" y2="990" />
+  <line class="line" x1="80" y1="1050" x2="1160" y2="1050" />
+  <line class="line" x1="80" y1="1110" x2="1160" y2="1110" />
+  <line class="line" x1="80" y1="1170" x2="1160" y2="1170" />
+
+  <!-- Observations -->
+  <text class="text label" x="80" y="1250">Observacoes</text>
+  <line class="bold" x1="80" y1="1260" x2="1160" y2="1260" />
+  <line class="line" x1="80" y1="1320" x2="1160" y2="1320" />
+  <line class="line" x1="80" y1="1380" x2="1160" y2="1380" />
+  <line class="line" x1="80" y1="1440" x2="1160" y2="1440" />
+
+  <!-- Signature -->
+  <text class="text muted" x="80" y="1520">Assinatura e carimbo:</text>
+  <line class="line" x1="250" y1="1525" x2="1160" y2="1525" />
+
+  <text class="text muted" x="80" y="1580">Medico:</text>
+  <line class="line" x1="150" y1="1585" x2="520" y2="1585" />
+
+  <text class="text muted" x="560" y="1580">CRM:</text>
+  <line class="line" x1="610" y1="1585" x2="900" y2="1585" />
+</svg>

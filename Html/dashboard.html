@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- CSS base primeiro -->
+  <link rel="stylesheet" href="../Css/base.css" />
+
+  <!-- CSS especifico da pagina depois -->
+  <link rel="stylesheet" href="../Css/dashboard.css" />
+
+  <!-- Font Awesome (icones simples) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <title>Dashboard - ProntoGest</title>
+</head>
+
+<body class="dashboard-page">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="icon">
+      <img src="../img/logo.png" class="logo-sidebar">
+    </div>
+
+    <a href="./dashboard.html">Dashboard</a>
+    <a href="./pacientes.html">Cadastro</a>
+    <a href="./triagem.html">Triagem</a>
+    <a href="./prontuario.html">Prontuário</a>
+    <a href="./prescricoes.html">Prescrições</a>
+    <a href="./leitos.html">Leitos</a>
+    <a href="./farmacia.html">Farmácia</a>
+    <a href="./medicamentos.html">Medicamentos Padrão</a>
+    <a href="./consultas.html">Agenda</a>
+    <a href="./relatorios.html">Relatórios</a>
+    <a href="./faturamento.html" class="admin-only">Faturamento</a>
+    <a href="./lista-pacientes.html">Lista de Pacientes</a>
+    <a href="./funcionarios-cadastro.html" class="admin-only">Cadastro de Funcionários</a>
+    <a href="./funcionarios-lista.html" class="admin-only">Funcionários</a>
+
+    <button class="btn-sair" onclick="logout()">Sair</button>
+  </div>
+
+  <!-- CONTEUDO -->
+  <div class="content">
+    <div class="dashboard-shell">
+      <section class="dashboard-hero">
+        <div class="hero-left">
+          <p class="hero-eyebrow">ProntoGest - Painel Operacional</p>
+          <h1>Dashboard</h1>
+          <p class="hero-subtitle">Visão geral rápida, status do dia e atalhos essenciais.</p>
+        </div>
+
+        <div class="hero-right">
+          <div class="hero-chip is-action" id="btnAssistencia" data-action="assistencia" tabindex="0" role="button">
+            <i class="fa-solid fa-shield-heart"></i>
+            <div>
+              <strong>Assistência segura</strong>
+              <span>Fluxo clínico organizado</span>
+            </div>
+          </div>
+          <div class="hero-chip is-action" id="btnIndicadores" data-action="indicadores" tabindex="0" role="button">
+            <i class="fa-solid fa-chart-line"></i>
+            <div>
+              <strong>Indicadores ativos</strong>
+              <span>Acompanhe em tempo real</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BLOCO 1: PONTOS DE ATENf-f'O -->
+      <section class="dashboard-card pontos-atencao-card">
+        <header class="card-header">
+          <h3><i class="fa-solid fa-bell"></i> Pontos de Atenção</h3>
+          <span class="card-subtitle">Situações que exigem acompanhamento</span>
+        </header>
+
+        <div id="pontosAtencaoList" class="pontos-atencao-list">
+          <div class="empty-state">Nenhum ponto de atenção no momento.</div>
+        </div>
+      </section>
+
+      <!-- BLOCO 2: KPIs PRINCIPAIS -->
+      <div class="cards dashboard-kpis">
+        <!-- Total de pacientes -->
+        <div class="card kpi-card kpi-green">
+          <div class="kpi-icon"><i class="fa-solid fa-user-injured"></i></div>
+          <div class="kpi-info">
+            <span class="kpi-label">Total de pacientes</span>
+            <p id="pacientesTotal">0</p>
+            <span class="kpi-meta">Base ativa</span>
+          </div>
+        </div>
+
+        <!-- Consultas do dia -->
+        <div class="card kpi-card kpi-blue">
+          <div class="kpi-icon"><i class="fa-solid fa-stethoscope"></i></div>
+          <div class="kpi-info">
+            <span class="kpi-label">Consultas do dia</span>
+            <p id="consultasHoje">0</p>
+            <span class="kpi-meta">Agenda prevista</span>
+          </div>
+        </div>
+
+        <!-- Leitos ocupados -->
+        <div class="card kpi-card kpi-orange">
+          <div class="kpi-icon"><i class="fa-solid fa-bed"></i></div>
+          <div class="kpi-info">
+            <span class="kpi-label">Leitos ocupados</span>
+            <p id="leitosOcupadosCard">0</p>
+            <span class="kpi-meta">Monitoramento</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BLOCO 3: GRID PRINCIPAL -->
+      <div class="dashboard-grid">
+        <!-- Agenda do dia -->
+        <section class="dashboard-card agenda-card">
+          <header class="card-header">
+            <h3><i class="fa-regular fa-calendar"></i> Agenda do Dia</h3>
+            <span class="card-subtitle">Consultas programadas</span>
+          </header>
+
+          <div id="agendaList" class="agenda-list"></div>
+          <div id="agendaEmpty" class="empty-state">Nenhuma consulta agendada para hoje.</div>
+        </section>
+
+        <!-- Alertas -->
+        <section class="dashboard-card alertas-card">
+          <header class="card-header">
+            <h3><i class="fa-solid fa-triangle-exclamation"></i> Alertas</h3>
+            <span class="card-subtitle">Pendências e status críticos</span>
+          </header>
+
+          <div id="alertasList" class="alertas-list">
+            <div class="alerta-item alerta-info is-clickable" data-href="./triagem.html" tabindex="0" role="button">
+              <div class="alerta-left">
+                <i class="fa-solid fa-clipboard-list"></i>
+                <span>Triagens do dia</span>
+              </div>
+              <span class="alerta-count" id="triagensHoje">0</span>
+            </div>
+
+            <div class="alerta-item alerta-warn is-clickable" data-href="./consultas.html" tabindex="0" role="button">
+              <div class="alerta-left">
+                <i class="fa-solid fa-user-clock"></i>
+                <span>Consultas de hoje</span>
+              </div>
+              <span class="alerta-count" id="alertaConsultas">0</span>
+            </div>
+
+            <div class="alerta-item alerta-danger is-clickable" data-href="./leitos.html" tabindex="0" role="button">
+              <div class="alerta-left">
+                <i class="fa-solid fa-bed"></i>
+                <span>Leitos ocupados</span>
+              </div>
+              <span class="alerta-count" id="alertaLeitos">0</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Ações rápidas -->
+        <section class="dashboard-card acoes-card">
+          <header class="card-header">
+            <h3><i class="fa-solid fa-bolt"></i> Ações rápidas</h3>
+            <span class="card-subtitle">Atalhos para tarefas do dia</span>
+          </header>
+
+          <div class="acoes-grid">
+            <a class="quick-btn quick-primary" href="./pacientes.html">
+              <i class="fa-solid fa-user-plus"></i> Novo paciente
+            </a>
+            <a class="quick-btn quick-teal" href="./triagem.html">
+              <i class="fa-solid fa-notes-medical"></i> Nova triagem
+            </a>
+            <a class="quick-btn quick-purple" href="./consultas.html">
+              <i class="fa-solid fa-calendar-plus"></i> Nova consulta
+            </a>
+            <a class="quick-btn quick-amber" href="./prontuario.html">
+              <i class="fa-solid fa-folder-open"></i> Abrir PEP
+            </a>
+          </div>
+        </section>
+      </div>
+
+      <!-- BLOCO 4: RESUMO DO DIA -->
+      <section class="dashboard-card resumo-dia">
+        <header class="card-header">
+          <h3>Resumo do Dia</h3>
+          <span class="card-subtitle">Atividade em tempo real</span>
+        </header>
+
+        <div class="resumo-grid">
+          <div class="resumo-item">
+            <span>Pacientes cadastrados</span>
+            <strong id="resumoPacientes">0</strong>
+          </div>
+
+          <div class="resumo-item">
+            <span>Consultas do dia</span>
+            <strong id="resumoConsultas">0</strong>
+          </div>
+
+          <div class="resumo-item">
+            <span>Triagens do dia</span>
+            <strong id="resumoTriagens">0</strong>
+          </div>
+
+          <div class="resumo-item">
+            <span>Leitos ocupados</span>
+            <strong id="resumoAtendimento">0</strong>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script src="../Js/logout.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="../Js/api.js"></script>
+  <script src="../Js/auth-guard.js"></script>
+  <script src="../Js/menu-guard.js"></script>
+  <script src="../Js/dashboard.js"></script>
+  <script src="../Js/page-user-box.js"></script>
+</body>
+</html>

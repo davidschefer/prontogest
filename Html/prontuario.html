@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="../Css/base.css">
+  <link rel="stylesheet" href="../Css/prontuario.css">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <title>Prontuário - ProntoGest</title>
+</head>
+
+<body class="his-layout">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="icon">
+      <img src="../img/logo.png" class="logo-sidebar">
+    </div>
+
+    <a href="./dashboard.html">Dashboard</a>
+    <a href="./pacientes.html">Cadastro</a>
+    <a href="./triagem.html">Triagem</a>
+    <a href="./prontuario.html">Prontuário</a>
+    <a href="./prescricoes.html">Prescrições</a>
+    <a href="./leitos.html">Leitos</a>
+    <a href="./farmacia.html">Farmácia</a>
+    <a href="./medicamentos.html">Medicamentos Padrão</a>
+    <a href="./consultas.html">Agenda</a>
+    <a href="./relatorios.html">Relatórios</a>
+    <a href="./faturamento.html" class="admin-only">Faturamento</a>
+    <a href="./lista-pacientes.html">Lista de Pacientes</a>
+    <a href="./funcionarios-cadastro.html" class="admin-only">Cadastro de Funcionários</a>
+    <a href="./funcionarios-lista.html" class="admin-only">Funcionários</a>
+
+    <button class="btn btn-primary btn-sair" type="button" onclick="logout()">Sair</button>
+  </div>
+
+  <!-- CONTEUDO -->
+  <div class="content">
+    <div class="his-header" aria-label="Barra de contexto">
+      <div class="his-header-left">
+        <button type="button" class="his-menu-toggle" id="hisMenuToggle" aria-label="Recolher menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <span class="his-breadcrumb">Prontuário / Paciente</span>
+      </div>
+      <div class="his-header-right">
+        <input type="text" class="his-search" placeholder="Buscar paciente, prescrição ou evolução..." />
+      </div>
+    </div>
+    <h1>Prontuário do Paciente</h1>
+    <br/>
+        <div id="profissionalBox" class="prof-box" style="display:none;"></div>
+    
+
+    <div class="card">
+
+      <!-- Seletor de paciente -->
+      <div class="field-row">
+        <div class="field">
+          <label>Paciente:</label>
+          <select id="pacienteSelect">
+            <option value="">Selecione um paciente...</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- RESUMO DO PACIENTE -->
+      <div class="resumo-paciente" id="resumoPaciente">
+        <div class="resumo-header">
+          <h2>Resumo do Paciente</h2>
+          <span class="pill" id="resumoId">ID: -"</span>
+        </div>
+
+        <div class="resumo-grid">
+          <div class="resumo-item">
+            <span>Paciente</span>
+            <strong id="resumoNome">-"</strong>
+          </div>
+
+          <div class="resumo-item">
+            <span>Última Triagem</span>
+            <strong id="resumoTriagem">-"</strong>
+            <small id="resumoDiag" class="muted">Diagnstico: -"</small>
+          </div>
+
+          <div class="resumo-item">
+            <span>Últimos Vitais</span>
+            <strong id="resumoVitais">-"</strong>
+            <small id="resumoVitaisData" class="muted">-"</small>
+          </div>
+
+          <div class="resumo-item">
+            <span>Última Evolução</span>
+            <strong id="resumoEvolucao">-"</strong>
+            <small id="resumoProf" class="muted">Profissional: -"</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== ABAS ===== -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="tab-evolucoes" type="button">
+          Evoluções <span class="tab-count" id="countEvo">(0)</span>
+        </button>
+
+        <button class="tab-btn" data-tab="tab-patologias" type="button">
+          Patologias <span class="tab-count" id="countPat">(0)</span>
+        </button>
+
+        <button class="tab-btn" data-tab="tab-vitais" type="button">
+          Sinais Vitais <span class="tab-count" id="countVit">(0)</span>
+        </button>
+
+        <button class="tab-btn" data-tab="tab-medicamentos" type="button">
+          Medicamentos <span class="tab-count" id="countMed">(0)</span>
+        </button>
+
+        <button class="tab-btn" data-tab="tab-documentos" type="button">
+          Documentos <span class="tab-count" id="countDoc">(0)</span>
+        </button>
+      </div>
+
+      <!-- =========================
+           ABA: EVOLUÇÕES
+           ========================= -->
+      <section id="tab-evolucoes" class="tab-panel active">
+
+        <!-- indicador de edição -->
+        <div class="edit-banner" id="editBanner" style="display:none;">
+          <div>
+            <strong>Modo edição:</strong>
+            <span id="editBannerInfo">Editando evolução.</span>
+          </div>
+          <button class="btn btn-danger btn-sm" type="button" id="cancelarEdicaoBtn">Cancelar</button>
+        </div>
+
+        <!-- box do formulário -->
+        <div class="evolucao-box" id="evolucaoBox">
+          <label>Tipo de Evolução:</label>
+          <select id="tipoEvolucao">
+            <option value="">Selecione...</option>
+            <option value="Fisioterapeuta">Evolução Fisioterapeuta</option>
+            <option value="EducadorFisico">Evolução Educador Físico</option>
+            <option value="Social">Evolução Social</option>
+            <option value="Fonoaudiologa">Evolução Fonoaudióloga</option>
+            <option value="TecEnfermagem">Evolução Técnico(a) de Enfermagem</option>
+            <option value="Enfermeiro">Evolução do Enfermeiro(a)</option>
+            <option value="Medica">Evolução Médica</option>
+            <option value="Nutricional">Evolução Nutricional</option>
+            <option value="PassagemSonda">Evolução de Passagem de Sonda</option>
+          </select>
+
+          <label>Evolução:</label>
+          <textarea id="evolucao" rows="5"></textarea>
+
+         <!-- ===== LINHA 1 (VERMELHO) ===== -->
+<div class="linha-form grid-3">
+
+  <div class="field">
+    <label>Presso Arterial (PA):</label>
+    <input type="text" id="pa">
+  </div>
+
+  <div class="field">
+    <label>Frequncia Cardaca (FC):</label>
+    <input type="text" id="fc">
+  </div>
+
+  <div class="field">
+    <label>Frequncia Respiratria (FR):</label>
+    <input type="text" id="fr">
+  </div>
+
+</div>
+
+
+<!-- ===== LINHA 2 (VERDE) ===== -->
+<div class="linha-form grid-3">
+
+  <div class="field">
+    <label>Saturao (%):</label>
+    <input type="text" id="saturacao">
+  </div>
+
+  <div class="field">
+    <label>Temperatura (C):</label>
+    <input type="text" id="temp">
+  </div>
+
+  <div class="field">
+    <label>HGT (mg/dl):</label>
+    <input type="text" id="hgt">
+  </div>
+
+</div>
+
+
+<!-- ===== LINHA 3 (AMARELO) ===== -->
+<div class="linha-form grid-3">
+
+  <div class="field">
+    <label>SVD (ml):</label>
+    <input type="text" id="svd">
+  </div>
+
+  <div class="field">
+    <label>Diurese:</label>
+    <select id="diurese">
+      <option value="">Selecione...</option>
+      <option value="Sim">Sim</option>
+      <option value="No">No</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>Evacuao:</label>
+    <select id="evacuacao">
+      <option value="">Selecione...</option>
+      <option value="Sim">Sim</option>
+      <option value="No">No</option>
+    </select>
+  </div>
+
+</div>
+          <div class="form-actions">
+            <button class="btn btn-primary" id="adicionarBtn" type="button">Adicionar Evolução</button>
+          </div>
+        </div>
+
+        <div class="lista timeline" id="listaEvolucoes"> 
+          <h2>Evoluções Registradas</h2>
+          <!-- lista via JS -->
+        </div>
+      </section>
+
+      <!-- =========================
+           ABA: PATOLOGIAS
+           ========================= -->
+      <section id="tab-patologias" class="tab-panel">
+        <div class="panel-actions">
+          <div class="left">
+            <input class="search" id="buscarPatologia" type="text" placeholder="Buscar patologia...">
+          </div>
+          <div class="right">
+            <button class="btn btn-primary" type="button" onclick="abrirCadastroPatologia()">Adicionar Patologia</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Patologia</th>
+                <th>Detalhes</th>
+                <th>Aes</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaPatologias"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- =========================
+           ABA: VITAIS
+           ========================= -->
+      <section id="tab-vitais" class="tab-panel">
+        <div class="panel-actions">
+          <div class="left"><strong>Registros de sinais vitais</strong></div>
+          <div class="right">
+            <button class="btn btn-primary" type="button" onclick="abrirCadastroVitais()">Adicionar</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Data/Hora</th>
+                <th>PA</th>
+                <th>FC</th>
+                <th>FR</th>
+                <th>SAT</th>
+                <th>Temp</th>
+                <th>HGT</th>
+                <th>Aes</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaVitais"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- =========================
+           ABA: MEDICAMENTOS
+           ========================= -->
+      <section id="tab-medicamentos" class="tab-panel">
+        <div class="panel-actions">
+          <div class="left">
+            <input class="search" id="buscarMedicamento" type="text" placeholder="Buscar medicamento...">
+          </div>
+          <div class="right">
+            <button class="btn btn-primary" type="button" onclick="abrirCadastroMedicamento()">Adicionar Medicamento</button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Medicamento</th>
+                <th>Posologia</th>
+                <th>Incio</th>
+                <th>Status</th>
+                <th>Aes</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaMedicamentos"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- =========================
+           ABA: DOCUMENTOS
+           ========================= -->
+      <section id="tab-documentos" class="tab-panel">
+        <div class="panel-actions">
+          <div class="left"><strong>Anexos do paciente</strong></div>
+          <div class="right">
+            <button class="btn btn-primary" type="button" onclick="abrirAnexoDocumento()">Adicionar Documento</button>
+          </div>
+        </div>
+
+        <div class="lista" id="listaDocumentos"></div>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="../Js/api.js"></script>
+  <script src="../Js/logout.js"></script>
+  <script src="../Js/menu-guard.js"></script>
+  <script src="../Js/auth-guard.js"></script>
+
+  <script src="../Js/prontuario.js"></script>
+  <script src="../Js/prontuario-tabs.js"></script>
+  <script src="../Js/page-user-box.js"></script>
+</body>
+</html>
+

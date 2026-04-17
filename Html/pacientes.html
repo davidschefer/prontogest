@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../Css/base.css">
+
+     <link rel="stylesheet" href="../Css/pacientes.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <title>Cadastro de Pacientes - ProntoGest</title>
+
+
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+       <div class="icon">
+      <img src="../img/logo.png" class="logo-sidebar">
+    </div>
+        <a href="./dashboard.html">Dashboard</a>
+    <a href="./pacientes.html">Cadastro</a>
+    <a href="./triagem.html">Triagem</a>
+    <a href="./prontuario.html">Prontuário</a>
+    <a href="./prescricoes.html">Prescrições</a>
+    <a href="./leitos.html">Leitos</a>
+    <a href="./farmacia.html">Farmácia</a>
+    <a href="./medicamentos.html">Medicamentos Padrão</a>
+    <a href="./consultas.html">Agenda</a>
+    <a href="./relatorios.html">Relatórios</a>
+    <a href="./faturamento.html" class="admin-only">Faturamento</a>
+    <a href="./lista-pacientes.html">Lista de Pacientes</a>
+    <a href="./funcionarios-cadastro.html" class="admin-only">Cadastro de Funcionários</a>
+    <a href="./funcionarios-lista.html" class="admin-only">Funcionários</a>
+    
+        <button class="btn-sair" onclick="logout()">Sair</button>
+
+
+    </div>
+ <div class="content">
+    <div class="container">
+      <h1>Cadastro de Pacientes</h1>
+
+   <div class="card card-sgh-md">
+
+        <div class="linha-form">
+          <div>
+            <label>Nome do Paciente <span class="obrigatorio">*</span>:</label>
+            <input type="text" id="nome">
+          </div>
+
+          <div>
+            <label>Data de Nascimento <span class="obrigatorio">*</span>:</label>
+            <input type="date" id="nascimento">
+          </div>
+        </div>
+
+        <div class="linha-form">
+          <div>
+            <label>Telefone <span class="obrigatorio">*</span>:</label>
+            <input type="text" id="telefone" maxlength="15">
+          </div>
+
+          <div>
+            <label>Telefone do Familiar:</label>
+            <input type="text" id="telefoneFamiliar" maxlength="15">
+          </div>
+        </div>
+
+        <div class="linha-form">
+          <div>
+            <label>Familiar ou Responsável:</label>
+            <input type="text" id="familiarResponsavel" placeholder="Nome do familiar ou responsável">
+          </div>
+
+          <div>
+            <label>CPF <span class="obrigatorio">*</span>:</label>
+            <input type="text" id="cpf" maxlength="14">
+          </div>
+        </div>
+
+        <div class="linha-form">
+          <div>
+            <label>Convênio:</label>
+            <select id="convenio" onchange="verificarCampos()">
+              <option value="">Selecione...</option>
+              <option value="SUS">SUS</option>
+              <option value="Plano de Saúde">Plano de Saúde</option>
+              <option value="Particular">Particular</option>
+            </select>
+          </div>
+          <div></div>
+        </div>
+
+        <div id="planoSaude">
+          <label>Qual plano?</label>
+          <input type="text" id="planoSaudeInput">
+        </div>
+
+        <h3>Endereço</h3>
+
+        <div class="linha-form">
+          <div>
+            <label>Rua:</label>
+            <input type="text" id="rua">
+          </div>
+          <div>
+            <label>Número:</label>
+            <input type="text" id="numero">
+          </div>
+        </div>
+
+        <div class="linha-form">
+          <div>
+            <label>Cidade:</label>
+            <input type="text" id="cidade">
+          </div>
+          <div>
+            <label>Estado:</label>
+            <input type="text" id="estado">
+          </div>
+        </div>
+
+        <div class="linha-form">
+          <div>
+            <label>CEP:</label>
+            <input type="text" id="cep" maxlength="10">
+          </div>
+          <div>
+            <label>Complemento:</label>
+            <input type="text" id="complemento">
+          </div>
+        </div>
+
+        <button id="cadastrarBtn" onclick="cadastrar()" disabled>
+          Cadastrar Paciente
+        </button>
+      </div>
+
+      <div class="lista" id="listaPacientes">
+        <h2>Pacientes Cadastrados</h2>
+      </div>
+
+    </div> <!-- container -->
+  </div> <!-- content -->
+    </div>
+      <script src="../Js/api.js"></script>
+    <script src="../Js/auth-guard.js"></script>
+    <script src="../Js/menu-guard.js"></script>
+    <script src="../Js/logout.js"></script>
+    <script src="../Js/pacientes.js"></script>
+    
+  <script src="../Js/page-user-box.js"></script>
+</body>
+
+</html>
+

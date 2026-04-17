@@ -1,0 +1,67 @@
+@charset "UTF-8";
+h1 {
+  text-align: center;
+  font-size: 36px;
+  color: #0a1a33;
+  margin-bottom: 10px;
+}
+h2 {
+  margin-top: 20px;
+  color: #0a1a33;
+}
+p {
+  color: #334155;
+}
+label {
+  font-weight: bold;
+  color: #0a1a33;
+  display: block;
+  margin-bottom: 6px;
+}
+input {
+  width: 240px;
+  padding: 10px 12px;
+  border: 1px solid #d0d7e2;
+  border-radius: 10px;
+  background: #f8fafc;
+  outline: none;
+}
+input:focus {
+  border-color: #0A66C2;
+}
+button {
+  width: 160px;
+  padding: 12px;
+  background: #0A66C2;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 15px;
+}
+button:hover {
+  background: #084d94;
+}
+#auditoriaStatus {
+  margin: 12px 0;
+}
+table th {
+  font-size: 14px;
+  color: #0a1a33;
+}
+table td {
+  font-size: 14px;
+  color: #111827;
+}
+table tbody tr:hover {
+  background: rgba(10, 102, 194, 0.06);
+}
+@media (max-width: 700px) {
+  input {
+    width: 100%;
+    max-width: 100%;
+  }
+  button {
+    width: 100%;
+  }
+}

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ORDEM CERTA: base primeiro, página depois -->
+  <link rel="stylesheet" href="../Css/base.css">
+  <link rel="stylesheet" href="../Css/leitos.css">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <title>Leitos - ProntoGest</title>
+</head>
+
+<body>
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="icon">
+      <img src="../img/logo.png" class="logo-sidebar">
+    </div>
+
+    <a href="./dashboard.html">Dashboard</a>
+    <a href="./pacientes.html">Cadastro</a>
+    <a href="./triagem.html">Triagem</a>
+    <a href="./prontuario.html">Prontuário</a>
+    <a href="./prescricoes.html">Prescrições</a>
+    <a href="./leitos.html">Leitos</a>
+    <a href="./farmacia.html">Farmácia</a>
+    <a href="./medicamentos.html">Medicamentos Padrão</a>
+    <a href="./consultas.html">Agenda</a>
+    <a href="./relatorios.html">Relatórios</a>
+    <a href="./faturamento.html" class="admin-only">Faturamento</a>
+    <a href="./lista-pacientes.html">Lista de Pacientes</a>
+    <a href="./funcionarios-cadastro.html" class="admin-only">Cadastro de Funcionários</a>
+    <a href="./funcionarios-lista.html" class="admin-only">Funcionários</a>
+
+    <button class="btn-sair" onclick="logout()">Sair</button>
+  </div>
+
+  <!-- CONTEDO -->
+  <div class="content">
+    <h1>Controle de Leitos</h1>
+
+    <div class="card">
+      <label>Paciente:</label>
+      <select id="pacienteSelect">
+        <option value="">Selecione um paciente...</option>
+      </select>
+
+      <label>Leito:</label>
+      <select id="leitoSelect">
+        <option value="">Selecione um leito...</option>
+      </select>
+
+      <button type="button" onclick="ocuparLeito()">Ocupar Leito</button>
+    </div>
+
+    <div class="lista" id="listaLeitos">
+      <!-- Leitos sero exibidos aqui -->
+    </div>
+  </div>
+  <script src="../Js/api.js"></script>
+  <script src="../Js/auth-guard.js"></script>
+  <script src="../Js/menu-guard.js"></script>
+  <script src="../Js/logout.js"></script>
+  <script src="../Js/leitos.js"></script>
+  
+  <script src="../Js/page-user-box.js"></script>
+</body>
+
+</html>
+

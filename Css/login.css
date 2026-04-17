@@ -1,0 +1,109 @@
+@charset "UTF-8";
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+body {
+    margin: 0;
+    height: 100vh;
+    background: linear-gradient(135deg, #0A66C2, #e5e7eb);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial, sans-serif;
+}
+.login-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+.login-card {
+    background: #f2f2f2;
+    width: 360px;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+.logo-main {
+    font-size: 36px;
+    font-weight: bold;
+    color: #4b2aad;
+}
+.logo-sub {
+    font-size: 14px;
+    color: #555;
+}
+.login-card h2 {
+    margin: 25px 0;
+    color: #0A66C2;
+}
+.input-group {
+    margin-bottom: 15px;
+}
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 15px;
+}
+.options {
+    text-align: left;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+.options input {
+    margin-right: 6px;
+}
+button {
+    width: 100%;
+    padding: 12px;
+    background: #4b2aad;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+button:hover {
+    background: #3a2090;
+}
+button[disabled] {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+.toast-container {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 9999;
+}
+.toast {
+    min-width: 260px;
+    max-width: 340px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #0f172a;
+    background: #f8fafc;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+    border-left: 4px solid #0A66C2;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: all 0.2s ease;
+}
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+.toast.success { border-left-color: #16a34a; }
+.toast.error { border-left-color: #dc2626; }
+.toast.warn { border-left-color: #f59e0b; }
+.toast.info { border-left-color: #0A66C2; }

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<link rel="stylesheet" href="../Css/base.css">
+<link rel="stylesheet" href="../Css/triagem.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<title>Triagem - ProntoGest</title>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+<div class="icon">
+      <img src="../img/logo.png" class="logo-sidebar">
+    </div>
+
+    <a href="./dashboard.html">Dashboard</a>
+    <a href="./pacientes.html">Cadastro</a>
+    <a href="./triagem.html">Triagem</a>
+    <a href="./prontuario.html">Prontuário</a>
+    <a href="./prescricoes.html">Prescrições</a>
+    <a href="./leitos.html">Leitos</a>
+    <a href="./farmacia.html">Farmácia</a>
+    <a href="./medicamentos.html">Medicamentos Padrão</a>
+    <a href="./consultas.html">Agenda</a>
+    <a href="./relatorios.html">Relatórios</a>
+    <a href="./faturamento.html" class="admin-only">Faturamento</a>
+    <a href="./lista-pacientes.html">Lista de Pacientes</a>
+    <a href="./funcionarios-cadastro.html" class="admin-only">Cadastro de Funcionários</a>
+    <a href="./funcionarios-lista.html" class="admin-only">Funcionários</a>
+
+<button class="btn-sair" onclick="logout()">Sair</button>
+</div>
+
+<!-- CONTEDO -->
+<div class="content">
+
+<h1>Triagem de Pacientes</h1>
+
+<div id="profissionalBox" class="prof-box" style="display:none;"></div>
+
+<div class="card card-sgh-md">
+
+<!-- ===============================
+DADOS DO PACIENTE
+=============================== -->
+<div class="linha-form grid-2">
+
+<div>
+<label>Paciente:</label>
+<select id="pacienteSelect">
+<option value="">Selecione um paciente...</option>
+</select>
+</div>
+
+<div>
+<label>Diagnstico:</label>
+<textarea id="diagnostico" rows="3"></textarea>
+</div>
+
+</div>
+
+<!-- ===============================
+Y" CONTAINER CLNICO (NOVO)
+=============================== -->
+<div class="clinical-box">
+
+<label>Evolução / Observações:</label>
+<textarea id="evolucao" rows="4" maxlength="3000"
+placeholder="Digite observaes da triagem (opcional)..."></textarea>
+<small id="contadorEvolucao">0/3000</small>
+
+<!-- ===== SINAIS VITAIS ===== -->
+
+<div class="linha-form grid-3">
+
+<div>
+<label>Presso Arterial (PA):</label>
+<input type="text" id="pa">
+</div>
+
+<div>
+<label>Frequncia Cardaca (FC):</label>
+<input type="text" id="fc">
+</div>
+
+<div>
+<label>Frequncia Respiratria (FR):</label>
+<input type="text" id="fr">
+</div>
+
+</div>
+
+<div class="linha-form grid-3">
+
+<div>
+<label>Temperatura (C):</label>
+<input type="text" id="temp">
+</div>
+
+<div>
+<label>HGT (mg/dl):</label>
+<input type="text" id="hgt">
+</div>
+
+<div>
+<label>Saturao (%):</label>
+<input type="text" id="saturacao">
+</div>
+
+</div>
+
+<div class="linha-form grid-1">
+
+<div>
+<label>Classificao de Risco:</label>
+<select id="risco">
+<option value="">Selecione...</option>
+<option value="Vermelho">Vermelho</option>
+<option value="Laranja">Laranja</option>
+<option value="Amarelo">Amarelo</option>
+<option value="Verde">Verde</option>
+<option value="Azul">Azul</option>
+</select>
+</div>
+
+</div>
+
+<button id="registrarBtn" onclick="adicionarTriagem()">
+Registrar Triagem
+</button>
+
+<button id="cancelarEdicaoBtn"
+style="display:none;"
+onclick="cancelarEdicao()">
+Cancelar edio
+</button>
+
+</div>
+
+<div id="triagemMsg" class="msg"></div>
+
+<div class="lista timeline" id="listaTriagens">
+<h2>Triagens Registradas</h2>
+</div>
+
+</div>
+</div>
+
+<script src="../Js/api.js"></script>
+<script src="../Js/auth-guard.js"></script>
+<script src="../Js/menu-guard.js"></script>
+<script src="../Js/logout.js"></script>
+<script src="../Js/triagem.js"></script>
+
+<script>
+(function(){
+const ta=document.getElementById("evolucao");
+const out=document.getElementById("contadorEvolucao");
+if(!ta||!out)return;
+function atualizar(){out.textContent=`${ta.value.length}/3000`;}
+ta.addEventListener("input",atualizar);
+atualizar();
+})();
+</script>
+
+  <script src="../Js/page-user-box.js"></script>
+</body>
+</html>
+
