@@ -33,12 +33,16 @@ app.use("/img", express.static(path.join(__dirname, "..", "img"))); // 🔥 NOVO
 
 // CORS (Live Server / portas diferentes)
 const FRONTEND_URL = String(process.env.FRONTEND_URL || process.env.APP_URL || "").trim();
+
 const allowedOrigins = [
   "http://localhost:5500",
   "http://127.0.0.1:5500",
   "http://localhost:3000",
   "http://127.0.0.1:3000",
+  "https://prontogest.com.br",
+  "https://www.prontogest.com.br",
 ];
+
 if (FRONTEND_URL) allowedOrigins.push(FRONTEND_URL);
 
 app.use(
