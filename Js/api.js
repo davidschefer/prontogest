@@ -1,13 +1,13 @@
 /* ===========================
-   api.js -" Mini SGH
+   api.js - Mini SGH
    - Centraliza chamadas HTTP
    - Injeta JWT automaticamente
    - Tratamento uniforme de erro
    - Suporta respostas vazias (204 No Content)
-   - ? Produção-friendly (mesma origem quando apropriado)
-   - ? Auto-detecta Live Server e aponta p/ Express (3000)
-   - ? Timeout p/ evitar travar quando backend cai
-   - ? 401/403: limpa sessão (pronto p/ redirect se quiser)
+   - Produção-friendly (mesma origem quando apropriado)
+   - Auto-detecta Live Server e aponta p/ Express (3000)
+   - Timeout p/ evitar travar quando backend cai
+   - 401/403: limpa sessão (pronto p/ redirect se quiser)
    =========================== */
 
 (function () {
@@ -27,13 +27,13 @@
   }
 
   function resolveApiBase() {
-    // ? Override manual (prioridade máxima)
+    // Override manual (prioridade máxima)
     // Ex: localStorage.setItem("api_base", "http://localhost:3000");
     const forced = sanitizeBase(localStorage.getItem("api_base"));
     if (forced) return forced;
 
-    // ? Auto-detect: quando o FRONT está no Live Server, a API está no Express (3000)
-    // (isso resolve seu erro :5500/api/login)
+    // Auto-detect: quando o FRONT está no Live Server, a API está no Express (3000)
+    // Isso mantém o fluxo local funcionando em http://127.0.0.1:5500 ou http://localhost:5500
     const host = String(window.location.hostname || "");
     const port = String(window.location.port || "");
 
@@ -43,11 +43,13 @@
 
     if (isLiveServer) {
       // usa o mesmo host se for 127.0.0.1/localhost, senão cai pra localhost
-      const apiHost = host === "127.0.0.1" || host === "localhost" ? host : "localhost";
+      const apiHost =
+        host === "127.0.0.1" || host === "localhost" ? host : "localhost";
       return `http://${apiHost}:3000`;
     }
 
-    // ? Padrão: mesma origem (ideal em produção ou quando Express serve o front)
+    // Em produção ou quando o front está sendo servido pelo mesmo domínio,
+    // usa a própria origem atual (ex.: https://prontogest.com.br)
     return sanitizeBase(window.location.origin);
   }
 
@@ -78,7 +80,7 @@
         headers["Content-Type"] = "application/json";
       }
     } else {
-      // ? Só força JSON se existir body (evita Content-Type "à toa")
+      // Só força JSON se existir body (evita Content-Type "à toa")
       if (
         body != null &&
         !isFormData(body) &&
@@ -104,7 +106,7 @@
 
     let res;
     try {
-      // ? garante path correto
+      // garante path correto
       const url = `${base}${String(path || "").startsWith("/") ? "" : "/"}${path || ""}`;
 
       res = await fetch(url, {
