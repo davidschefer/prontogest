@@ -24,11 +24,13 @@ body {
 
 .content {
   flex: 1;
-  padding: 34px 24px;
+  min-width: 0;
   width: 100%;
-  max-width: 100%;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 40px;
 }
-
 h1 {
   text-align: center;
   font-size: 36px;
@@ -455,11 +457,11 @@ body.his-layout {
   display: flex;
 }
 
-body.his-layout body.his-layout .content {
+body.his-layout .content {
   flex: 1;
   min-width: 0;
   width: 100%;
-  max-width: 100%;
+  max-width: 1200px;
 }
 
 .his-header {
@@ -520,20 +522,20 @@ body.his-layout body.his-layout .content {
   background: #f8fafc;
 }
 
-body.his-layout.sidebar-collapsed @media (max-width: 900px) {
-  .content {
+@media (max-width: 900px) {
+  body.his-layout.sidebar-collapsed .content {
     padding: 20px;
   }
 
-  .his-header {
+  body.his-layout.sidebar-collapsed .his-header {
     flex-wrap: wrap;
   }
 
-  .his-header-right {
+  body.his-layout.sidebar-collapsed .his-header-right {
     width: 100%;
   }
 
-  .his-search {
+  body.his-layout.sidebar-collapsed .his-search {
     max-width: 100%;
   }
 }

@@ -2,12 +2,12 @@
 // server.js — Mini SGH
 // ================================
 
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 const express = require("express");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
-const path = require("path");
 const db = require("./db");
 
 const app = express();
@@ -32,14 +32,23 @@ app.use("/Js", express.static(path.join(__dirname, "..", "Js")));
 app.use("/img", express.static(path.join(__dirname, "..", "img"))); // 🔥 NOVO
 
 // CORS (Live Server / portas diferentes)
+const FRONTEND_URL = String(process.env.FRONTEND_URL || process.env.APP_URL || "").trim();
+const allowedOrigins = [
+  "http://localhost:5500",
+  "http://127.0.0.1:5500",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+];
+if (FRONTEND_URL) allowedOrigins.push(FRONTEND_URL);
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5500",
-      "http://127.0.0.1:5500",
-      "http://localhost:3000",
-      "http://127.0.0.1:3000",
-    ],
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      return allowedOrigins.includes(origin)
+        ? callback(null, true)
+        : callback(new Error("Not allowed by CORS"));
+    },
   })
 );
 
