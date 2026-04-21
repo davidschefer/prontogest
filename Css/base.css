@@ -1033,3 +1033,23 @@ main.content > h1{
   color: #d8c27a;
   font-weight: 600;
 }
+/* ===== SIDEBAR RESPONSIVA ===== */
+
+.sidebar {
+  width: 250px;
+  transition: all 0.3s ease;
+}
+
+.content {
+  margin-left: 250px;
+  transition: all 0.3s ease;
+}
+
+/* MENU RECOLHIDO */
+.menu-recolhido .sidebar {
+  width: 80px;
+}
+
+.menu-recolhido .content {
+  margin-left: 80px;
+}
