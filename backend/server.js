@@ -8,6 +8,7 @@ require("dotenv").config({ path: path.join(__dirname, ".env") });
 const express = require("express");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 const db = require("./db");
 
 const app = express();
@@ -17,7 +18,9 @@ if (!JWT_SECRET) {
   console.error("JWT_SECRET não definido");
   process.exit(1);
 }
-const MODO_DEMO = String(process.env.MODO_DEMO || "false").trim().toLowerCase() === "true";
+const MODO_DEMO =
+  Object.prototype.hasOwnProperty.call(process.env, "MODO_DEMO") &&
+  process.env.MODO_DEMO === "true";
 
 // ================================
 // Middlewares globais
@@ -41,7 +44,8 @@ const allowedOrigins = [
   "http://127.0.0.1:3000",
   "https://prontogest.com.br",
   "https://www.prontogest.com.br",
-];
+  "http://2.24.217.39:3000",
+  "http://2.24.217.39",];
 
 if (FRONTEND_URL) allowedOrigins.push(FRONTEND_URL);
 
@@ -49,10 +53,15 @@ app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      return allowedOrigins.includes(origin)
-        ? callback(null, true)
-        : callback(new Error("Not allowed by CORS"));
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        console.log("❌ Bloqueado por CORS:", origin);
+        return callback(new Error("Not allowed by CORS"));
+      }
     },
+    credentials: true
   })
 );
 
@@ -492,14 +501,76 @@ function normalizarEmail(v) {
   return String(v || "").trim().toLowerCase();
 }
 
-function findFuncionarioByCredenciais(email, senha) {
-  const em = normalizarEmail(email);
-  const pw = String(senha || "");
-  return funcionarios.find(
-    (f) => normalizarEmail(f?.email) === em && String(f?.senha || "") === pw
-  );
+function isBcryptHash(value) {
+  return /^\$2[aby]\$\d{2}\$/.test(String(value || ""));
 }
 
+async function validarSenhaFuncionario(senhaInformada, senhaSalva) {
+  const pw = String(senhaInformada ?? "");
+  if (senhaSalva === undefined || senhaSalva === null) return false;
+
+  const storedRaw = Buffer.isBuffer(senhaSalva)
+    ? senhaSalva.toString("utf8")
+    : String(senhaSalva);
+  const stored = String(storedRaw);
+  const storedTrim = stored.trim();
+  if (!storedTrim) return false;
+
+  if (isBcryptHash(storedTrim)) {
+    try {
+      return await bcrypt.compare(pw, storedTrim);
+    } catch {
+      return false;
+    }
+  }
+
+  // Compatibilidade temporaria para registros legados em texto puro.
+  if (stored !== pw && storedTrim !== pw) {
+    return false;
+  }
+  return true;
+}
+
+async function findFuncionarioByCredenciais(email, senha) {
+  const em = normalizarEmail(email);
+  let falhaDb = false;
+
+  if (DB_ENABLED) {
+    try {
+      const rows = await db.query(
+        "SELECT * FROM usuarios WHERE LOWER(email) = ? LIMIT 1",
+        [em]
+      );
+
+      const funcionarioDb = Array.isArray(rows) && rows.length ? rows[0] : null;
+
+      if (funcionarioDb) {
+        const ok = await validarSenhaFuncionario(senha, funcionarioDb?.senha);
+        if (!ok) return null;
+
+        return {
+          id: funcionarioDb.id,
+          nome: funcionarioDb.nome,
+          email: funcionarioDb.email,
+          role: funcionarioDb.role || "funcionario",
+          clinica_id: funcionarioDb.clinica_id || "default"
+        };
+      }
+    } catch {
+      falhaDb = true;
+    }
+  }
+
+  if (!DB_ENABLED || falhaDb) {
+    for (const f of funcionarios) {
+      if (normalizarEmail(f?.email) !== em) continue;
+      const ok = await validarSenhaFuncionario(senha, f?.senha);
+      if (ok) return f;
+    }
+  }
+
+  return null;
+}
 const LOGIN_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const LOGIN_RATE_LIMIT_MAX_TENTATIVAS = 5;
 const loginRateLimit = new Map();
@@ -594,7 +665,7 @@ app.get("/api/health", (req, res) => {
 // Autenticação (login)
 // ================================
 
-app.post("/api/login", (req, res) => {
+app.post("/api/login", async (req, res) => {
   const { email, senha } = req.body || {};
 
   if (!email || !senha) {
@@ -696,7 +767,7 @@ app.post("/api/login", (req, res) => {
   }
 
   // 3) Funcionários cadastrados via /api/funcionarios (memória)
-  const func = findFuncionarioByCredenciais(emailNorm, senhaStr);
+  const func = await findFuncionarioByCredenciais(emailNorm, senhaStr);
 
   if (func) {
     if (String(func.status || "").toLowerCase() === "inativo") {
@@ -2724,13 +2795,15 @@ app.post("/api/funcionarios", authRequired, requireRole("admin"), async (req, re
       .json({ ok: false, error: "Já existe funcionário com esse email" });
   }
 
+  const senhaHash = isBcryptHash(senha) ? senha : await bcrypt.hash(senha, 10);
+
   const item = {
     ...body,
     id: body.id ? String(body.id) : makeId(),
     clinica_id,
     nome,
     email,
-    senha, // MVP (depois hash)
+    senha: senhaHash,
     role,
     orgao: body.orgao ? String(body.orgao) : "",
     registro: body.registro ? String(body.registro) : "",
@@ -2771,6 +2844,13 @@ app.put("/api/funcionarios/:id", authRequired, requireRole("admin"), async (req,
   }
 
   const body = req.body || {};
+  let senhaAtualizada = funcionarios[idx].senha;
+  if (body.senha !== undefined && String(body.senha || "").trim() !== "") {
+    const senhaNova = String(body.senha);
+    senhaAtualizada = isBcryptHash(senhaNova)
+      ? senhaNova
+      : await bcrypt.hash(senhaNova, 10);
+  }
   if (body.email !== undefined) {
     const email = String(body.email || "").trim().toLowerCase();
     const jaExiste = funcionarios.some(
@@ -2784,10 +2864,7 @@ app.put("/api/funcionarios/:id", authRequired, requireRole("admin"), async (req,
   funcionarios[idx] = {
     ...funcionarios[idx],
     ...body,
-    senha:
-      body.senha !== undefined && String(body.senha || "").trim() !== ""
-        ? String(body.senha)
-        : funcionarios[idx].senha,
+    senha: senhaAtualizada,
     id: funcionarios[idx].id,
     clinica_id: funcionarios[idx].clinica_id || clinica_id,
     updatedAt: new Date().toISOString(),
@@ -2871,3 +2948,5 @@ async function startServer() {
 }
 
 startServer();
+
+

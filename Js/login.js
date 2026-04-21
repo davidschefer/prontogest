@@ -98,6 +98,16 @@
     }
   }
 
+  function permitirFallbackLocal() {
+    const host = String(window.location.hostname || "").trim().toLowerCase();
+    const isLocalHost =
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      host === "::1";
+    const isFileProtocol = window.location.protocol === "file:";
+    return isLocalHost || isFileProtocol;
+  }
+
   // ---------- Fallback LOCAL (opcional) ----------
   // 1) tenta admin de emergência em localStorage["local_admin"]
   //    formato: {"email":"...","senha":"...","role":"admin"}
@@ -250,7 +260,7 @@
     }
 
     // 2) Se API falhou / não carregou, tenta fallback local (opcional)
-    const local = tentarLoginLocal(email, senha);
+    const local = permitirFallbackLocal() ? tentarLoginLocal(email, senha) : null;
     if (!local) {
       if (tentativaAPI.type === "no_apiFetch") {
         showToast(
@@ -272,3 +282,4 @@
     window.location.href = "./dashboard.html";
   });
 })();
+
