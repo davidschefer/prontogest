@@ -753,14 +753,15 @@
     const role = String(localStorage.getItem("auth_role") || "").trim().toLowerCase();
     const isAdmin = role === "admin";
 
-    const [pacientes, triagens, consultas, leitos, funcionarios, evolucoes] = await Promise.all([
-      apiGetArray("/api/pacientes", ["pacientes_cache_v1", "pacientes_lista_v1"]),
-      apiGetArray("/api/triagens", ["triagens_lista_v1"]),
-      apiGetArray("/api/consultas", ["consultas_v1"]),
-      apiGetArray("/api/leitos", ["leitos_v1"]),
-      isAdmin ? apiGetArray("/api/funcionarios", ["funcionarios"]) : Promise.resolve(lsArray("funcionarios")),
-      apiGetArray("/api/evolucoes", ["evolucoes_cache_v1"]),
-    ]);
+    const [pacientes, triagens, consultas, leitos, funcionarios] = await Promise.all([
+  apiGetArray("/api/pacientes", ["pacientes_cache_v1", "pacientes_lista_v1"]),
+  apiGetArray("/api/triagens", ["triagens_lista_v1"]),
+  apiGetArray("/api/consultas", ["consultas_v1"]),
+  apiGetArray("/api/leitos", ["leitos_v1"]),
+  isAdmin ? apiGetArray("/api/funcionarios", ["funcionarios"]) : Promise.resolve(lsArray("funcionarios")),
+]);
+
+const evolucoes = lsArray("evolucoes_cache_v1");
 
     const evolucoesAll = Array.isArray(evolucoes) && evolucoes.length
       ? evolucoes
