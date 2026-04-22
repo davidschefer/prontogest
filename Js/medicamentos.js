@@ -89,9 +89,9 @@
       { nome: "Propranolol", classe: "Cardíacos" },
       { nome: "Digoxina", classe: "Cardíacos" },
       { nome: "Amiodarona", classe: "Cardíacos" },
-      { nome: "Isossorbida", classe: "Cardíacos" },
+      { nome: "Mononitrato de isossorbida", classe: "Cardíacos" },
       { nome: "Nitroglicerina", classe: "Cardíacos" },
-      { nome: "AAS", classe: "Cardíacos" },
+      { nome: "Ácido acetilsalicílico", classe: "Cardíacos" },
       { nome: "Clopidogrel", classe: "Cardíacos" },
       // Diabetes (DM)
       { nome: "Metformina", classe: "Diabetes (DM)" },
@@ -122,7 +122,7 @@
       { nome: "Meloxicam", classe: "Anti-inflamatórios" },
       // Antibióticos
       { nome: "Amoxicilina", classe: "Antibióticos" },
-      { nome: "Amoxicilina + Clavulanato", classe: "Antibióticos" },
+      { nome: "Amoxicilina + clavulanato de potássio", classe: "Antibióticos" },
       { nome: "Azitromicina", classe: "Antibióticos" },
       { nome: "Cefalexina", classe: "Antibióticos" },
       { nome: "Ceftriaxona", classe: "Antibióticos" },

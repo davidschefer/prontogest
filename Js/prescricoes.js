@@ -107,9 +107,9 @@
       "Propranolol",
       "Digoxina",
       "Amiodarona",
-      "Isossorbida",
+      "Mononitrato de isossorbida",
       "Nitroglicerina",
-      "AAS",
+      "Ácido acetilsalicílico",
       "Clopidogrel",
       // Diabetes (DM)
       "Metformina",
@@ -132,7 +132,7 @@
       "Ibuprofeno",
       "Tramadol",
       "Cetorolaco",
-      "AAS",
+      "Ácido acetilsalicílico",
       // Anti-inflamatórios
       "Diclofenaco",
       "Naproxeno",
@@ -141,7 +141,7 @@
       "Meloxicam",
       // Antibióticos
       "Amoxicilina",
-      "Amoxicilina + Clavulanato",
+      "Amoxicilina + clavulanato de potássio",
       "Azitromicina",
       "Cefalexina",
       "Ceftriaxona",
