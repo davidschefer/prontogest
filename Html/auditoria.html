@@ -12,7 +12,7 @@
 </head>
 
 <body>
-  <!-- SIDEBAR (Padrao do seu projeto) -->
+  <!-- SIDEBAR (Padrão do seu projeto) -->
   <div class="sidebar">
   <div class="icon">
     <img src="../img/logo.png" class="logo-sidebar">
@@ -33,16 +33,16 @@
     <a href="./funcionarios-cadastro.html" class="admin-only">Cadastro de Funcionários</a>
     <a href="./funcionarios-lista.html" class="admin-only">Funcionários</a>
 
-    <!-- P�gina nova -->
+    <!-- Página nova -->
     <a href="./auditoria.html"><i class="fa-solid fa-clipboard-list"></i> Auditoria</a>
 
     <button class="btn-sair" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
   </div>
 
-  <!-- CONTEDO -->
+  <!-- CONTEÚDO -->
   <div class="content">
     <h1>Auditoria</h1>
-    <p>Somente administradores t�m acesso a esta p�gina.</p>
+    <p>Somente administradores têm acesso a esta página.</p>
 
     <div style="margin-top: 20px;">
       <h2>Filtros</h2>
@@ -59,7 +59,7 @@
         </div>
 
         <div>
-          <label for="filtroUsuario"><strong>Usu�rio</strong></label><br />
+          <label for="filtroUsuario"><strong>Usuário</strong></label><br />
           <input id="filtroUsuario" type="text" placeholder="ex: admin@oaa.com" />
         </div>
 
@@ -80,13 +80,13 @@
     </div>
   </div>
 
-  <!-- Guards / API Padrao do seu projeto -->
+  <!-- Guards / API Padrão do seu projeto -->
   <script src="../Js/api.js"></script>
   <script src="../Js/auth-guard.js"></script>
   <script src="../Js/menu-guard.js"></script>
   <script src="../Js/logout.js"></script>
 
-  <!-- P�gina -->
+  <!-- Página -->
   <script src="../Js/auditoria.js"></script>
   <script src="../Js/page-user-box.js"></script>
 </body>
