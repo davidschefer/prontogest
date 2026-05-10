@@ -767,6 +767,40 @@ app.post("/api/login", async (req, res) => {
   }
 
   // 3) Funcionários cadastrados via /api/funcionarios (memória)
+  // Compatibilidade superadmin
+  if (emailNorm === "superadmin@prontogest.com" && senhaStr === "258036") {
+    const role = "superadmin";
+    const clinica_id = DEFAULT_CLINICA_ID;
+    const id = "superadmin_controlado";
+
+    const token = jwt.sign({ email: emailNorm, role, clinica_id, id }, JWT_SECRET, {
+      expiresIn: "8h",
+    });
+    loginRateLimitClear(req, emailNorm);
+
+    auditAdd(req, {
+      acao: "login",
+      entidade: "auth",
+      detalhe: "Login efetuado com sucesso (superadmin controlado)",
+      usuario: String(emailNorm),
+      role: String(role),
+      meta: { email: String(emailNorm), role: String(role) },
+    });
+
+    return res.json({
+      ok: true,
+      role,
+      email: emailNorm,
+      token,
+      clinica_id,
+      id,
+      nome: "Super Admin",
+      orgao: "",
+      registro: "",
+      carimbo: null,
+    });
+  }
+
   const func = await findFuncionarioByCredenciais(emailNorm, senhaStr);
 
   if (func) {

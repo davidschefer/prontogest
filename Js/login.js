@@ -70,11 +70,12 @@
   /**
    * Salva sessão base (compatível com tudo que já existe)
    */
-  function salvarSessaoBase({ token, role, email }) {
+  function salvarSessaoBase({ token, role, email, clinica_id }) {
     localStorage.setItem("auth_token", String(token || ""));
     localStorage.setItem("auth_role", String(role || ""));
     localStorage.setItem("auth_email", String(email || ""));
     localStorage.setItem("auth_logged_in", "true");
+    localStorage.setItem("auth_clinica_id", String(clinica_id || "default"));
   }
 
   /**
@@ -243,6 +244,7 @@
         token: data.token,
         role: data.role || "funcionario",
         email: data.email || email,
+        clinica_id: data.clinica_id || "default",
       });
 
       // NOVO: dados profissionais (se vierem)
@@ -275,7 +277,7 @@
       return;
     }
 
-    salvarSessaoBase(local);
+    salvarSessaoBase({ ...local, clinica_id: local.clinica_id || "default" });
     salvarSessaoProfissional(local);
     lembrarEmailSeMarcado(email);
     showToast("Login realizado com sucesso.", "success", 1500);

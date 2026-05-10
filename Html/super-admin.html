@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../Css/base.css" />
+  <link rel="stylesheet" href="../Css/super-admin.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <title>Super Admin - ProntoGest</title>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="icon">
+      <img src="../img/logo.png" class="logo-sidebar" />
+    </div>
+    <a href="./dashboard.html">Dashboard</a>
+    <a href="./super-admin.html" class="is-active">Super Admin</a>
+    <button class="btn-sair" onclick="logout()">Sair</button>
+  </aside>
+
+  <div class="content">
+    <h1>Super Admin</h1>
+
+    <section class="card super-card">
+      <h2>Cadastro de Clínica</h2>
+      <form id="formClinica" class="grid-2">
+        <input id="clinicaNome" placeholder="Nome da clínica" required />
+        <input id="clinicaId" placeholder="clinica_id" required />
+        <input id="clinicaCnpj" placeholder="CNPJ" />
+        <input id="clinicaTelefone" placeholder="Telefone" />
+        <input id="clinicaEndereco" placeholder="Endereço" />
+        <input id="clinicaEmail" type="email" placeholder="Email" />
+        <input id="clinicaLogo" placeholder="Logo (URL/base64)" />
+        <input id="clinicaResponsavel" placeholder="Responsável" />
+        <select id="clinicaStatus">
+          <option value="ativo">Ativo</option>
+          <option value="inativo">Inativo</option>
+        </select>
+        <button class="btn btn-primary" type="submit">Cadastrar Clínica</button>
+      </form>
+    </section>
+
+    <section class="card super-card">
+      <h2>Clínicas Cadastradas</h2>
+      <div id="listaClinicas" class="lista-clinicas"></div>
+    </section>
+
+    <section class="card super-card">
+      <h2>Criar Admin da Clínica</h2>
+      <form id="formAdminClinica" class="grid-2">
+        <input id="adminClinicaId" placeholder="clinica_id" required />
+        <input id="adminNome" placeholder="Nome" required />
+        <input id="adminEmail" type="email" placeholder="Email" required />
+        <input id="adminSenha" type="password" placeholder="Senha" required />
+        <button class="btn btn-primary" type="submit">Criar Admin</button>
+      </form>
+    </section>
+  </div>
+
+  <script src="../Js/api.js"></script>
+  <script src="../Js/logout.js"></script>
+  <script src="../Js/super-admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+﻿@charset "UTF-8";
+
+.super-card {
+  max-width: 1280px;
+  margin-bottom: 20px;
+  padding: 18px;
+}
+
+.super-card h2 {
+  margin: 0 0 14px;
+  color: #172b45;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.grid-2 input,
+.grid-2 select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d6e2ee;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.grid-2 button {
+  grid-column: 1 / -1;
+}
+
+.lista-clinicas {
+  display: grid;
+  gap: 10px;
+}
+
+.clinica-item {
+  border: 1px solid #e6edf6;
+  border-radius: 12px;
+  background: #fff;
+  padding: 12px;
+}
+
+.modulos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(140px, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.modulos-grid label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.clinica-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .modulos-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}

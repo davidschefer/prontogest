@@ -307,12 +307,53 @@
   }
 
   function init() {
+    enforceClinicaModuleGuard();
     applySidebarState();
     ensureHeader();
     renderUserBox();
     buildPageHero();
     bindAssistActions(document);
     highlightCurrentMenu();
+  }
+
+  function enforceClinicaModuleGuard() {
+    const role = String(localStorage.getItem("auth_role") || "").trim().toLowerCase();
+    if (role === "superadmin") return;
+
+    const clinicaId = String(localStorage.getItem("auth_clinica_id") || "").trim();
+    if (!clinicaId) return;
+
+    let mods = null;
+    try {
+      const raw = localStorage.getItem("clinica_modules_" + clinicaId);
+      mods = raw ? JSON.parse(raw) : null;
+    } catch {
+      mods = null;
+    }
+    if (!mods || typeof mods !== "object") return;
+
+    const page = (window.location.pathname.split("/").pop() || "").toLowerCase();
+    const pageMap = {
+      "dashboard.html": "dashboard",
+      "pacientes.html": "pacientes",
+      "triagem.html": "triagem",
+      "prontuario.html": "prontuario",
+      "prescricoes.html": "prescricoes",
+      "leitos.html": "leitos",
+      "consultas.html": "consultas",
+      "farmacia.html": "farmacia",
+      "faturamento.html": "faturamento",
+      "funcionarios-cadastro.html": "funcionarios",
+      "funcionarios-lista.html": "funcionarios",
+      "relatorios.html": "relatorios",
+    };
+
+    const moduleKey = pageMap[page];
+    if (!moduleKey) return;
+    if (mods[moduleKey] === false) {
+      alert("Módulo desativado para esta clínica.");
+      window.location.href = "./dashboard.html";
+    }
   }
 
   if (document.readyState === "loading") {
