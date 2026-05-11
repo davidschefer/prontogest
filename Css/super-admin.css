@@ -115,6 +115,62 @@
   background: #374151;
 }
 
+.lista-admins-clinica {
+  display: grid;
+  gap: 12px;
+}
+
+.admins-filter-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.admins-filter-row label {
+  font-weight: 700;
+  color: #172b45;
+}
+
+.admins-filter-row select {
+  min-width: 220px;
+  padding: 8px 10px;
+  border: 1px solid #d6e2ee;
+  border-radius: 8px;
+}
+
+.admin-clinica-group {
+  border: 1px solid #e6edf6;
+  border-radius: 12px;
+  background: #fff;
+  padding: 12px;
+}
+
+.admin-clinica-group h3 {
+  margin: 0 0 8px;
+  color: #172b45;
+  font-size: 16px;
+}
+
+.admin-item {
+  border: 1px solid #e6edf6;
+  border-radius: 10px;
+  padding: 10px;
+  background: #f8fbff;
+  margin-top: 8px;
+}
+
+.admin-item p {
+  margin: 0 0 6px;
+  color: #273f5f;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 @media (max-width: 900px) {
   .grid-2 {
     grid-template-columns: 1fr;

@@ -49,6 +49,15 @@ module.exports = function createSuperAdminRouter(deps) {
     return safeItem;
   }
 
+  function getAdminsByClinicaId(clinicaId) {
+    const cid = normalizeClinicaId(clinicaId) || DEFAULT_CLINICA_ID;
+    return funcionarios.filter(
+      (f) =>
+        normalizeClinicaId(f?.clinica_id) === cid &&
+        String(f?.role || "").trim().toLowerCase() === "admin"
+    );
+  }
+
   router.get("/superadmin", authRequired, requireRole("superadmin"), (req, res) => {
     auditAdd(req, {
       acao: "read",
@@ -299,6 +308,105 @@ module.exports = function createSuperAdminRouter(deps) {
     });
 
     return res.status(201).json({ ok: true, item: sanitizeAdminOutput(item) });
+  });
+
+  router.get("/clinicas/:clinica_id/admins", authRequired, requireRole("superadmin"), (req, res) => {
+    const clinica_id = normalizeClinicaId(req.params.clinica_id);
+    const clinica = getClinicaById(clinica_id);
+    if (!clinica) {
+      return res.status(404).json({ ok: false, error: "Clínica não encontrada" });
+    }
+
+    const items = getAdminsByClinicaId(clinica_id).map(sanitizeAdminOutput);
+    return res.json({ ok: true, items });
+  });
+
+  router.put("/clinicas/:clinica_id/admins/:admin_id", authRequired, requireRole("superadmin"), async (req, res) => {
+    const clinica_id = normalizeClinicaId(req.params.clinica_id);
+    const admin_id = String(req.params.admin_id || "").trim();
+    const body = req.body || {};
+
+    const clinica = getClinicaById(clinica_id);
+    if (!clinica) {
+      return res.status(404).json({ ok: false, error: "Clínica não encontrada" });
+    }
+
+    const idx = funcionarios.findIndex(
+      (f) =>
+        String(f?.id || "") === admin_id &&
+        normalizeClinicaId(f?.clinica_id) === clinica_id &&
+        String(f?.role || "").trim().toLowerCase() === "admin"
+    );
+    if (idx === -1) {
+      return res.status(404).json({ ok: false, error: "Administrador não encontrado" });
+    }
+
+    const nome = body.nome !== undefined ? String(body.nome || "").trim() : String(funcionarios[idx].nome || "");
+    const email = body.email !== undefined ? normalizeEmail(body.email) : normalizeEmail(funcionarios[idx].email);
+    const senha = body.senha !== undefined ? String(body.senha || "") : "";
+    const status = body.status !== undefined ? String(body.status || "").trim() : String(funcionarios[idx].status || "ativo");
+
+    if (!nome || !email) {
+      return res.status(400).json({ ok: false, error: "nome e email são obrigatórios" });
+    }
+
+    const emailEmUso = funcionarios.some(
+      (f, i) => i !== idx && normalizeEmail(f?.email) === email
+    );
+    if (emailEmUso) {
+      return res.status(409).json({ ok: false, error: "Já existe usuário com esse email" });
+    }
+
+    let senhaFinal = funcionarios[idx].senha;
+    if (senha) {
+      senhaFinal = await bcrypt.hash(senha, 10);
+    }
+
+    funcionarios[idx] = {
+      ...funcionarios[idx],
+      nome,
+      email,
+      senha: senhaFinal,
+      status: status || "ativo",
+      role: "admin",
+      clinica_id,
+      updatedAt: new Date().toISOString(),
+    };
+
+    if (typeof persistFuncionario === "function") {
+      try {
+        await persistFuncionario(funcionarios[idx]);
+      } catch (e) {
+        console.warn("DB: falha ao atualizar admin de clínica:", e?.message || e);
+      }
+    }
+
+    return res.json({ ok: true, item: sanitizeAdminOutput(funcionarios[idx]) });
+  });
+
+  router.delete("/clinicas/:clinica_id/admins/:admin_id", authRequired, requireRole("superadmin"), (req, res) => {
+    const clinica_id = normalizeClinicaId(req.params.clinica_id);
+    const admin_id = String(req.params.admin_id || "").trim();
+
+    const clinica = getClinicaById(clinica_id);
+    if (!clinica) {
+      return res.status(404).json({ ok: false, error: "Clínica não encontrada" });
+    }
+
+    const idx = funcionarios.findIndex(
+      (f) =>
+        String(f?.id || "") === admin_id &&
+        normalizeClinicaId(f?.clinica_id) === clinica_id &&
+        String(f?.role || "").trim().toLowerCase() === "admin"
+    );
+    if (idx === -1) {
+      return res.status(404).json({ ok: false, error: "Administrador não encontrado" });
+    }
+
+    const removido = funcionarios[idx];
+    funcionarios.splice(idx, 1);
+
+    return res.json({ ok: true, item: sanitizeAdminOutput(removido) });
   });
 
   return router;

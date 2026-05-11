@@ -15,9 +15,12 @@
   ];
   const LOGO_MAX_BYTES = 2 * 1024 * 1024;
   const LOGO_ALLOWED_TYPES = new Set(["image/png", "image/jpeg", "image/jpg", "image/webp"]);
+  const ADMINS_CACHE_KEY = "superadmin_admins_cache";
   let clinicaLogoBase64 = "";
   let editingClinicaId = "";
   let editingLogoAtual = "";
+  let clinicasCache = [];
+  let adminsCacheByClinica = {};
 
   function getRole() {
     return String(localStorage.getItem("auth_role") || "").trim().toLowerCase();
@@ -35,6 +38,29 @@
 
   function setClinicasLS(items) {
     localStorage.setItem(CLINICAS_LS_KEY, JSON.stringify(Array.isArray(items) ? items : []));
+  }
+
+  function getAdminsCacheLS() {
+    try {
+      const raw = localStorage.getItem(ADMINS_CACHE_KEY);
+      const data = raw ? JSON.parse(raw) : {};
+      return data && typeof data === "object" ? data : {};
+    } catch {
+      return {};
+    }
+  }
+
+  function setAdminsCacheLS(data) {
+    localStorage.setItem(ADMINS_CACHE_KEY, JSON.stringify(data && typeof data === "object" ? data : {}));
+  }
+
+  function escapeHtml(str) {
+    return String(str ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
   }
 
   function defaultModules() {
@@ -135,6 +161,29 @@
   async function apiGetClinicas() {
     const data = await window.apiFetch("/api/clinicas");
     return Array.isArray(data?.items) ? data.items : [];
+  }
+
+  async function apiGetAdminsClinica(clinicaId) {
+    const data = await window.apiFetch(`/api/clinicas/${encodeURIComponent(clinicaId)}/admins`);
+    return Array.isArray(data?.items) ? data.items : [];
+  }
+
+  async function apiUpdateAdmin(clinicaId, adminId, payload) {
+    const data = await window.apiFetch(
+      `/api/clinicas/${encodeURIComponent(clinicaId)}/admins/${encodeURIComponent(adminId)}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      }
+    );
+    return data?.item || null;
+  }
+
+  async function apiDeleteAdmin(clinicaId, adminId) {
+    return window.apiFetch(
+      `/api/clinicas/${encodeURIComponent(clinicaId)}/admins/${encodeURIComponent(adminId)}`,
+      { method: "DELETE" }
+    );
   }
 
   function moduleChecksHtml(clinica) {
@@ -287,13 +336,159 @@
     items.forEach((c) => root.appendChild(montarCardClinica(c)));
   }
 
+  function montarLinhaAdmin(admin, clinica_id) {
+    const item = document.createElement("div");
+    item.className = "admin-item";
+    item.innerHTML = `
+      <p>
+        <strong>Nome:</strong> ${escapeHtml(admin?.nome || "-")} |
+        <strong>Email:</strong> ${escapeHtml(admin?.email || "-")} |
+        <strong>Role:</strong> ${escapeHtml(admin?.role || "admin")} |
+        <strong>Clínica:</strong> ${escapeHtml(clinica_id)} |
+        <strong>Status:</strong> ${escapeHtml(admin?.status || "-")}
+      </p>
+      <div class="admin-actions">
+        <button type="button" class="btn btn-primary" data-admin-edit="1">Editar</button>
+        <button type="button" class="btn btn-danger" data-admin-remove="1">Remover</button>
+      </div>
+    `;
+
+    const btnEdit = item.querySelector("button[data-admin-edit]");
+    if (btnEdit) {
+      btnEdit.addEventListener("click", async function () {
+        const novoNome = window.prompt("Nome do administrador:", String(admin?.nome || ""));
+        if (novoNome === null) return;
+        const novoEmail = window.prompt("Email do administrador:", String(admin?.email || ""));
+        if (novoEmail === null) return;
+        const novoStatus = window.prompt("Status (ativo/inativo):", String(admin?.status || "ativo"));
+        if (novoStatus === null) return;
+        const novaSenha = window.prompt("Nova senha (deixe em branco para manter a atual):", "");
+        if (novaSenha === null) return;
+
+        const payload = {
+          nome: String(novoNome || "").trim(),
+          email: String(novoEmail || "").trim(),
+          status: String(novoStatus || "").trim() || "ativo",
+        };
+        if (String(novaSenha || "").trim()) {
+          payload.senha = String(novaSenha);
+        }
+
+        if (!payload.nome || !payload.email) {
+          alert("Nome e email são obrigatórios.");
+          return;
+        }
+
+        try {
+          await apiUpdateAdmin(clinica_id, String(admin?.id || ""), payload);
+          await carregarAdmins();
+        } catch (err) {
+          alert("Falha ao editar administrador: " + String(err?.message || err));
+        }
+      });
+    }
+
+    const btnRemove = item.querySelector("button[data-admin-remove]");
+    if (btnRemove) {
+      btnRemove.addEventListener("click", async function () {
+        const ok = window.confirm("Tem certeza que deseja remover este administrador?");
+        if (!ok) return;
+
+        try {
+          await apiDeleteAdmin(clinica_id, String(admin?.id || ""));
+          await carregarAdmins();
+        } catch (err) {
+          alert("Falha ao remover administrador: " + String(err?.message || err));
+        }
+      });
+    }
+
+    return item;
+  }
+
+  function atualizarFiltroClinicaAdmins() {
+    const select = document.getElementById("filtroClinicaAdmins");
+    if (!select) return;
+    const atual = select.value;
+    select.innerHTML = '<option value="">Todas as clínicas</option>';
+    clinicasCache.forEach((c) => {
+      const opt = document.createElement("option");
+      opt.value = String(c?.clinica_id || "");
+      opt.textContent = String(c?.nome || c?.clinica_id || "");
+      select.appendChild(opt);
+    });
+    if (atual && Array.from(select.options).some((o) => o.value === atual)) {
+      select.value = atual;
+    }
+  }
+
+  function renderAdmins() {
+    const root = document.getElementById("listaAdminsClinica");
+    const filtro = document.getElementById("filtroClinicaAdmins");
+    if (!root) return;
+    root.innerHTML = "";
+
+    const clinicaSelecionada = filtro ? String(filtro.value || "") : "";
+    const clinicasExibir = clinicaSelecionada
+      ? clinicasCache.filter((c) => String(c?.clinica_id) === clinicaSelecionada)
+      : clinicasCache;
+
+    if (!clinicasExibir.length) {
+      root.innerHTML = "<p>Nenhum administrador encontrado.</p>";
+      return;
+    }
+
+    clinicasExibir.forEach((clinica) => {
+      const clinica_id = String(clinica?.clinica_id || "");
+      const group = document.createElement("div");
+      group.className = "admin-clinica-group";
+      group.innerHTML = `<h3>${escapeHtml(clinica?.nome || "-")} (${escapeHtml(clinica_id)})</h3>`;
+
+      const admins = Array.isArray(adminsCacheByClinica[clinica_id]) ? adminsCacheByClinica[clinica_id] : [];
+      if (!admins.length) {
+        const p = document.createElement("p");
+        p.textContent = "Nenhum admin cadastrado para esta clínica.";
+        group.appendChild(p);
+      } else {
+        admins.forEach((a) => group.appendChild(montarLinhaAdmin(a, clinica_id)));
+      }
+
+      root.appendChild(group);
+    });
+  }
+
+  async function carregarAdmins() {
+    const cache = getAdminsCacheLS();
+    const novo = {};
+    for (const clinica of clinicasCache) {
+      const clinica_id = String(clinica?.clinica_id || "");
+      if (!clinica_id) continue;
+      try {
+        novo[clinica_id] = await apiGetAdminsClinica(clinica_id);
+      } catch {
+        novo[clinica_id] = Array.isArray(cache[clinica_id]) ? cache[clinica_id] : [];
+      }
+    }
+    adminsCacheByClinica = novo;
+    setAdminsCacheLS(adminsCacheByClinica);
+    renderAdmins();
+  }
+
   async function carregarClinicas() {
     try {
       const items = await apiGetClinicas();
+      clinicasCache = Array.isArray(items) ? items : [];
       setClinicasLS(items);
       renderClinicas(items);
+      atualizarFiltroClinicaAdmins();
+      await carregarAdmins();
     } catch {
-      renderClinicas(getClinicasLS());
+      const localItems = getClinicasLS();
+      clinicasCache = Array.isArray(localItems) ? localItems : [];
+      renderClinicas(localItems);
+      atualizarFiltroClinicaAdmins();
+      adminsCacheByClinica = getAdminsCacheLS();
+      renderAdmins();
     }
   }
 
@@ -420,9 +615,18 @@
         });
         alert("Administrador criado com sucesso.");
         form.reset();
+        await carregarAdmins();
       } catch (err) {
         alert("Falha ao criar administrador: " + String(err?.message || err));
       }
+    });
+  }
+
+  function bindFiltroAdmins() {
+    const select = document.getElementById("filtroClinicaAdmins");
+    if (!select) return;
+    select.addEventListener("change", function () {
+      renderAdmins();
     });
   }
 
@@ -461,6 +665,7 @@
     bindLogoUpload();
     resetLogoUploadUi();
     bindCriarAdminClinica();
+    bindFiltroAdmins();
     await carregarClinicas();
   });
 })();

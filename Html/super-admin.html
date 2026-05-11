@@ -68,6 +68,17 @@
         <button class="btn btn-primary" type="submit">Criar Admin</button>
       </form>
     </section>
+
+    <section class="card super-card">
+      <h2>Admins Cadastrados</h2>
+      <div class="admins-filter-row">
+        <label for="filtroClinicaAdmins">Filtrar por clínica</label>
+        <select id="filtroClinicaAdmins">
+          <option value="">Todas as clínicas</option>
+        </select>
+      </div>
+      <div id="listaAdminsClinica" class="lista-admins-clinica"></div>
+    </section>
   </div>
 
   <script src="../Js/api.js"></script>
