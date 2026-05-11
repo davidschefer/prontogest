@@ -176,6 +176,69 @@ module.exports = function createSuperAdminRouter(deps) {
     return res.json({ ok: true, item: clinica });
   });
 
+  router.put("/clinicas/:clinica_id", authRequired, requireRole("superadmin"), (req, res) => {
+    const clinica_id = normalizeClinicaId(req.params.clinica_id);
+    const body = req.body || {};
+
+    const clinica = getClinicaById(clinica_id);
+    if (!clinica) {
+      return res.status(404).json({ ok: false, error: "Clínica não encontrada" });
+    }
+
+    clinica.nome = String(body.nome !== undefined ? body.nome : clinica.nome || "").trim();
+    clinica.cnpj = String(body.cnpj !== undefined ? body.cnpj : clinica.cnpj || "").trim();
+    clinica.endereco = String(body.endereco !== undefined ? body.endereco : clinica.endereco || "").trim();
+    clinica.telefone = String(body.telefone !== undefined ? body.telefone : clinica.telefone || "").trim();
+    clinica.email = String(body.email !== undefined ? body.email : clinica.email || "").trim();
+    clinica.responsavel = String(body.responsavel !== undefined ? body.responsavel : clinica.responsavel || "").trim();
+    clinica.status = String(body.status !== undefined ? body.status : clinica.status || "ativo").trim() || "ativo";
+    clinica.logo = String(body.logo !== undefined ? body.logo : clinica.logo || "").trim();
+
+    clinica.personalizacao = {
+      ...clinica.personalizacao,
+      nomeClinica: clinica.nome,
+      cnpj: clinica.cnpj,
+      endereco: clinica.endereco,
+      telefone: clinica.telefone,
+      logo: clinica.logo,
+    };
+    clinica.updatedAt = new Date().toISOString();
+
+    auditAdd(req, {
+      acao: "update",
+      entidade: "clinicas",
+      entidadeId: clinica_id,
+      detalhe: "Clínica atualizada",
+    });
+
+    return res.json({ ok: true, item: clinica });
+  });
+
+  router.delete("/clinicas/:clinica_id", authRequired, requireRole("superadmin"), (req, res) => {
+    const clinica_id = normalizeClinicaId(req.params.clinica_id);
+    const idx = clinicas.findIndex((c) => normalizeClinicaId(c?.clinica_id) === clinica_id);
+    if (idx === -1) {
+      return res.status(404).json({ ok: false, error: "Clínica não encontrada" });
+    }
+
+    const removida = clinicas[idx];
+    clinicas.splice(idx, 1);
+
+    auditAdd(req, {
+      acao: "delete",
+      entidade: "clinicas",
+      entidadeId: clinica_id,
+      detalhe: "Clínica removida da lista",
+      meta: { nome: String(removida?.nome || "") },
+    });
+
+    return res.json({
+      ok: true,
+      message: "Clínica removida com sucesso.",
+      item: removida,
+    });
+  });
+
   router.post("/clinicas/:clinica_id/admin", authRequired, requireRole("superadmin"), async (req, res) => {
     const clinica_id = normalizeClinicaId(req.params.clinica_id);
     const body = req.body || {};

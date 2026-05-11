@@ -106,6 +106,15 @@
   object-fit: contain;
 }
 
+.btn-cancelar-edicao {
+  background: #4b5563;
+  color: #fff;
+}
+
+.btn-cancelar-edicao:hover {
+  background: #374151;
+}
+
 @media (max-width: 900px) {
   .grid-2 {
     grid-template-columns: 1fr;

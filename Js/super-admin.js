@@ -16,6 +16,8 @@
   const LOGO_MAX_BYTES = 2 * 1024 * 1024;
   const LOGO_ALLOWED_TYPES = new Set(["image/png", "image/jpeg", "image/jpg", "image/webp"]);
   let clinicaLogoBase64 = "";
+  let editingClinicaId = "";
+  let editingLogoAtual = "";
 
   function getRole() {
     return String(localStorage.getItem("auth_role") || "").trim().toLowerCase();
@@ -168,6 +170,79 @@
     alert("Módulos atualizados.");
   }
 
+  function preencherFormularioEdicao(clinica) {
+    document.getElementById("clinicaNome").value = String(clinica?.nome || "");
+    document.getElementById("clinicaId").value = String(clinica?.clinica_id || "");
+    document.getElementById("clinicaCnpj").value = String(clinica?.cnpj || "");
+    document.getElementById("clinicaTelefone").value = String(clinica?.telefone || "");
+    document.getElementById("clinicaEndereco").value = String(clinica?.endereco || "");
+    document.getElementById("clinicaEmail").value = String(clinica?.email || "");
+    document.getElementById("clinicaResponsavel").value = String(clinica?.responsavel || "");
+    document.getElementById("clinicaStatus").value = String(clinica?.status || "ativo");
+
+    const clinicaIdInput = document.getElementById("clinicaId");
+    const submitBtn = document.querySelector("#formClinica button[type='submit']");
+    const cancelBtn = document.getElementById("btnCancelarEdicao");
+    const statusEl = document.getElementById("logoFileStatus");
+    const previewWrap = document.getElementById("logoPreviewWrap");
+    const previewImg = document.getElementById("logoPreviewImg");
+
+    editingClinicaId = String(clinica?.clinica_id || "");
+    editingLogoAtual = String(clinica?.logo || "");
+    clinicaLogoBase64 = "";
+
+    if (clinicaIdInput) clinicaIdInput.readOnly = true;
+    if (submitBtn) submitBtn.textContent = "Salvar Alterações";
+    if (cancelBtn) cancelBtn.hidden = false;
+
+    if (editingLogoAtual && previewWrap && previewImg && statusEl) {
+      previewImg.src = editingLogoAtual;
+      previewWrap.hidden = false;
+      statusEl.textContent = "Logo atual carregada.";
+      statusEl.classList.remove("error");
+      statusEl.classList.add("ok");
+    } else {
+      resetLogoUploadUi();
+    }
+  }
+
+  function sairModoEdicao() {
+    editingClinicaId = "";
+    editingLogoAtual = "";
+    clinicaLogoBase64 = "";
+
+    const form = document.getElementById("formClinica");
+    const clinicaIdInput = document.getElementById("clinicaId");
+    const submitBtn = document.querySelector("#formClinica button[type='submit']");
+    const cancelBtn = document.getElementById("btnCancelarEdicao");
+
+    if (form) form.reset();
+    if (clinicaIdInput) clinicaIdInput.readOnly = false;
+    if (submitBtn) submitBtn.textContent = "Cadastrar Clínica";
+    if (cancelBtn) cancelBtn.hidden = true;
+
+    resetLogoUploadUi();
+  }
+
+  async function removerClinica(clinicaId) {
+    const confirmado = window.confirm("Tem certeza que deseja remover esta clínica? Essa ação não pode ser desfeita.");
+    if (!confirmado) return;
+
+    try {
+      await window.apiFetch(`/api/clinicas/${encodeURIComponent(clinicaId)}`, {
+        method: "DELETE",
+      });
+    } catch {
+      const items = getClinicasLS().filter((x) => String(x?.clinica_id) !== String(clinicaId));
+      setClinicasLS(items);
+    }
+
+    if (editingClinicaId === String(clinicaId)) {
+      sairModoEdicao();
+    }
+    await carregarClinicas();
+  }
+
   function montarCardClinica(clinica) {
     const card = document.createElement("div");
     card.className = "clinica-item";
@@ -178,12 +253,22 @@
       <div class="modulos-grid">${moduleChecksHtml(clinica)}</div>
       <div class="clinica-actions">
         <button class="btn btn-primary" data-save-mods="1">Salvar módulos</button>
+        <button class="btn btn-primary" data-edit-clinica="1">Editar</button>
+        <button class="btn btn-danger" data-remove-clinica="1">Remover</button>
       </div>
     `;
 
     const btn = card.querySelector("button[data-save-mods]");
     if (btn) {
       btn.addEventListener("click", () => salvarModulos(clinica.clinica_id, card));
+    }
+    const btnEdit = card.querySelector("button[data-edit-clinica]");
+    if (btnEdit) {
+      btnEdit.addEventListener("click", () => preencherFormularioEdicao(clinica));
+    }
+    const btnRemove = card.querySelector("button[data-remove-clinica]");
+    if (btnRemove) {
+      btnRemove.addEventListener("click", () => removerClinica(clinica.clinica_id));
     }
 
     return card;
@@ -214,7 +299,13 @@
 
   function bindCadastroClinica() {
     const form = document.getElementById("formClinica");
+    const cancelBtn = document.getElementById("btnCancelarEdicao");
     if (!form) return;
+    if (cancelBtn) {
+      cancelBtn.addEventListener("click", function () {
+        sairModoEdicao();
+      });
+    }
 
     form.addEventListener("submit", async function (ev) {
       ev.preventDefault();
@@ -236,36 +327,71 @@
         return;
       }
 
-      try {
-        await window.apiFetch("/api/clinicas", {
-          method: "POST",
-          body: JSON.stringify(payload),
-        });
-      } catch (err) {
-        const items = getClinicasLS();
-        if (items.some((x) => String(x?.clinica_id) === String(payload.clinica_id))) {
-          alert("clinica_id já cadastrado.");
-          return;
+      if (editingClinicaId) {
+        payload.logo = clinicaLogoBase64 || editingLogoAtual || "";
+        try {
+          await window.apiFetch(`/api/clinicas/${encodeURIComponent(editingClinicaId)}`, {
+            method: "PUT",
+            body: JSON.stringify(payload),
+          });
+        } catch {
+          const items = getClinicasLS();
+          const idx = items.findIndex((x) => String(x?.clinica_id) === String(editingClinicaId));
+          if (idx >= 0) {
+            items[idx] = {
+              ...items[idx],
+              nome: payload.nome,
+              cnpj: payload.cnpj,
+              endereco: payload.endereco,
+              telefone: payload.telefone,
+              email: payload.email,
+              responsavel: payload.responsavel,
+              status: payload.status,
+              logo: payload.logo,
+              personalizacao: {
+                ...(items[idx].personalizacao || {}),
+                nomeClinica: payload.nome,
+                cnpj: payload.cnpj,
+                endereco: payload.endereco,
+                telefone: payload.telefone,
+                logo: payload.logo,
+              },
+              updatedAt: new Date().toISOString(),
+            };
+            setClinicasLS(items);
+          }
         }
+      } else {
+        try {
+          await window.apiFetch("/api/clinicas", {
+            method: "POST",
+            body: JSON.stringify(payload),
+          });
+        } catch (err) {
+          const items = getClinicasLS();
+          if (items.some((x) => String(x?.clinica_id) === String(payload.clinica_id))) {
+            alert("clinica_id já cadastrado.");
+            return;
+          }
 
-        items.unshift({
-          ...payload,
-          modulos: defaultModules(),
-          personalizacao: {
-            nomeClinica: payload.nome,
-            cnpj: payload.cnpj,
-            endereco: payload.endereco,
-            telefone: payload.telefone,
-            logo: payload.logo,
-          },
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        });
-        setClinicasLS(items);
+          items.unshift({
+            ...payload,
+            modulos: defaultModules(),
+            personalizacao: {
+              nomeClinica: payload.nome,
+              cnpj: payload.cnpj,
+              endereco: payload.endereco,
+              telefone: payload.telefone,
+              logo: payload.logo,
+            },
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          });
+          setClinicasLS(items);
+        }
       }
 
-      form.reset();
-      resetLogoUploadUi();
+      sairModoEdicao();
       await carregarClinicas();
     });
   }
