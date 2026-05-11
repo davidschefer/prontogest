@@ -10,6 +10,7 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const db = require("./db");
+const createSuperAdminRouter = require("./routes/superadmin");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -895,6 +896,20 @@ app.get("/api/admin/area", authRequired, requireRole("admin"), (req, res) => {
 // ================================
 // ✅ AUDITORIA — rota admin
 // ================================
+
+app.use(
+  "/api",
+  createSuperAdminRouter({
+    authRequired,
+    requireRole,
+    makeId,
+    bcrypt,
+    auditAdd,
+    funcionarios,
+    DEFAULT_CLINICA_ID,
+    persistFuncionario,
+  })
+);
 
 app.get("/api/auditoria", authRequired, requireRole("admin"), (req, res) => {
   const clinica_id = getClinicaIdFromReq(req);
