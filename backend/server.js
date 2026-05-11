@@ -550,12 +550,19 @@ async function findFuncionarioByCredenciais(email, senha) {
         const ok = await validarSenhaFuncionario(senha, funcionarioDb?.senha);
         if (!ok) return null;
 
+        const memByEmail = funcionarios.find(
+          (f) => normalizarEmail(f?.email) === em
+        );
+        const clinicaIdDb = normalizeClinicaId(funcionarioDb.clinica_id);
+        const clinicaIdMem = normalizeClinicaId(memByEmail?.clinica_id);
+        const clinica_id = clinicaIdDb || clinicaIdMem || "default";
+
         return {
           id: funcionarioDb.id,
           nome: funcionarioDb.nome,
           email: funcionarioDb.email,
           role: funcionarioDb.role || "funcionario",
-          clinica_id: funcionarioDb.clinica_id || "default"
+          clinica_id
         };
       }
     } catch {
