@@ -35,6 +35,7 @@ module.exports = function createSuperAdminRouter(deps) {
   const funcionarios = deps.funcionarios;
   const DEFAULT_CLINICA_ID = deps.DEFAULT_CLINICA_ID || "default";
   const persistFuncionario = deps.persistFuncionario;
+  const runtime = deps.runtime && typeof deps.runtime === "object" ? deps.runtime : null;
 
   const clinicas = [];
 
@@ -56,6 +57,20 @@ module.exports = function createSuperAdminRouter(deps) {
         normalizeClinicaId(f?.clinica_id) === cid &&
         String(f?.role || "").trim().toLowerCase() === "admin"
     );
+  }
+
+  function getClinicaModulosById(clinicaId) {
+    const clinica = getClinicaById(clinicaId);
+    if (!clinica) return null;
+    return {
+      ...createDefaultModules(),
+      ...(clinica.modulos && typeof clinica.modulos === "object" ? clinica.modulos : {}),
+    };
+  }
+
+  if (runtime) {
+    runtime.getClinicaById = getClinicaById;
+    runtime.getClinicaModulosById = getClinicaModulosById;
   }
 
   router.get("/superadmin", authRequired, requireRole("superadmin"), (req, res) => {

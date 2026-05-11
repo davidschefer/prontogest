@@ -11,6 +11,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const db = require("./db");
 const createSuperAdminRouter = require("./routes/superadmin");
+const superAdminRuntime = {};
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -815,6 +816,10 @@ app.post("/api/login", async (req, res) => {
     const role = String(func.role || "funcionario").trim() || "funcionario";
     const clinica_id = normalizeClinicaId(func.clinica_id) || DEFAULT_CLINICA_ID;
     const id = String(func.id || "");
+    const modulosClinica =
+      typeof superAdminRuntime.getClinicaModulosById === "function"
+        ? superAdminRuntime.getClinicaModulosById(clinica_id)
+        : null;
 
     const token = jwt.sign({ email: emailNorm, role, clinica_id, id }, JWT_SECRET, {
       expiresIn: "8h",
@@ -844,6 +849,7 @@ app.post("/api/login", async (req, res) => {
       id,
 
       // ✅ dados profissionais para UI/PEP
+      modulos: modulosClinica || undefined,
       nome: String(func.nome || ""),
       orgao: String(func.orgao || ""),
       registro: String(func.registro || ""),
@@ -908,6 +914,7 @@ app.use(
     funcionarios,
     DEFAULT_CLINICA_ID,
     persistFuncionario,
+    runtime: superAdminRuntime,
   })
 );
 

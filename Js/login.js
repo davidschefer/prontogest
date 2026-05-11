@@ -78,6 +78,13 @@
     localStorage.setItem("auth_clinica_id", String(clinica_id || "default"));
   }
 
+  function salvarModulosClinica(clinica_id, modulos) {
+    const cid = String(clinica_id || "").trim();
+    if (!cid) return;
+    if (!modulos || typeof modulos !== "object" || Array.isArray(modulos)) return;
+    localStorage.setItem("clinica_modules_" + cid, JSON.stringify(modulos));
+  }
+
   /**
    * Salva dados profissionais (se existirem)
    * Espera que o backend devolva algo como:
@@ -246,6 +253,7 @@
         email: data.email || email,
         clinica_id: data.clinica_id || "default",
       });
+      salvarModulosClinica(data.clinica_id || "default", data.modulos);
 
       // NOVO: dados profissionais (se vierem)
       salvarSessaoProfissional({
