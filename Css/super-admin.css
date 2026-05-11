@@ -63,6 +63,49 @@
   flex-wrap: wrap;
 }
 
+.logo-upload-wrap {
+  border: 1px dashed #c8d8ea;
+  border-radius: 10px;
+  padding: 10px;
+  background: #f8fbff;
+}
+
+.logo-upload-wrap .btn {
+  width: auto;
+  min-width: 170px;
+}
+
+.logo-file-status {
+  margin: 10px 0 0;
+  color: #2a4668;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.logo-file-status.ok {
+  color: #1f7a36;
+}
+
+.logo-file-status.error {
+  color: #b42318;
+}
+
+.logo-preview-wrap {
+  margin-top: 10px;
+  padding: 8px;
+  border: 1px solid #dbe7f3;
+  border-radius: 10px;
+  background: #fff;
+  display: inline-block;
+}
+
+.logo-preview-img {
+  display: block;
+  max-width: 220px;
+  max-height: 110px;
+  object-fit: contain;
+}
+
 @media (max-width: 900px) {
   .grid-2 {
     grid-template-columns: 1fr;

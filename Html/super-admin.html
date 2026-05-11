@@ -30,7 +30,19 @@
         <input id="clinicaTelefone" placeholder="Telefone" />
         <input id="clinicaEndereco" placeholder="Endereço" />
         <input id="clinicaEmail" type="email" placeholder="Email" />
-        <input id="clinicaLogo" placeholder="Logo (URL/base64)" />
+        <div class="logo-upload-wrap">
+          <button id="btnLogoUpload" class="btn btn-primary" type="button">Adicionar Logo</button>
+          <input
+            id="clinicaLogoFile"
+            type="file"
+            accept="image/png,image/jpeg,image/jpg,image/webp"
+            hidden
+          />
+          <p id="logoFileStatus" class="logo-file-status">Nenhum arquivo selecionado.</p>
+          <div id="logoPreviewWrap" class="logo-preview-wrap" hidden>
+            <img id="logoPreviewImg" class="logo-preview-img" alt="Preview da logo da clínica" />
+          </div>
+        </div>
         <input id="clinicaResponsavel" placeholder="Responsável" />
         <select id="clinicaStatus">
           <option value="ativo">Ativo</option>

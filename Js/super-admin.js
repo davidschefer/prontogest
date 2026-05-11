@@ -13,6 +13,9 @@
     "funcionarios",
     "relatorios",
   ];
+  const LOGO_MAX_BYTES = 2 * 1024 * 1024;
+  const LOGO_ALLOWED_TYPES = new Set(["image/png", "image/jpeg", "image/jpg", "image/webp"]);
+  let clinicaLogoBase64 = "";
 
   function getRole() {
     return String(localStorage.getItem("auth_role") || "").trim().toLowerCase();
@@ -46,6 +49,85 @@
       funcionarios: true,
       relatorios: true,
     };
+  }
+
+  function resetLogoUploadUi() {
+    const statusEl = document.getElementById("logoFileStatus");
+    const previewWrap = document.getElementById("logoPreviewWrap");
+    const previewImg = document.getElementById("logoPreviewImg");
+    const fileInput = document.getElementById("clinicaLogoFile");
+
+    clinicaLogoBase64 = "";
+
+    if (fileInput) fileInput.value = "";
+    if (statusEl) {
+      statusEl.textContent = "Nenhum arquivo selecionado.";
+      statusEl.classList.remove("ok", "error");
+    }
+    if (previewWrap) previewWrap.hidden = true;
+    if (previewImg) previewImg.removeAttribute("src");
+  }
+
+  function fileToDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = function () {
+        resolve(String(reader.result || ""));
+      };
+      reader.onerror = function () {
+        reject(new Error("Falha ao ler o arquivo de logo."));
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function bindLogoUpload() {
+    const triggerBtn = document.getElementById("btnLogoUpload");
+    const fileInput = document.getElementById("clinicaLogoFile");
+    const statusEl = document.getElementById("logoFileStatus");
+    const previewWrap = document.getElementById("logoPreviewWrap");
+    const previewImg = document.getElementById("logoPreviewImg");
+    if (!triggerBtn || !fileInput || !statusEl || !previewWrap || !previewImg) return;
+
+    triggerBtn.addEventListener("click", function () {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener("change", async function () {
+      const file = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+      if (!file) {
+        resetLogoUploadUi();
+        return;
+      }
+
+      if (!LOGO_ALLOWED_TYPES.has(String(file.type || "").toLowerCase())) {
+        resetLogoUploadUi();
+        statusEl.textContent = "Arquivo inválido. Use PNG, JPG, JPEG ou WEBP.";
+        statusEl.classList.add("error");
+        return;
+      }
+
+      if (Number(file.size || 0) > LOGO_MAX_BYTES) {
+        resetLogoUploadUi();
+        statusEl.textContent = "Arquivo muito grande. Limite de 2MB.";
+        statusEl.classList.add("error");
+        return;
+      }
+
+      try {
+        const base64 = await fileToDataUrl(file);
+        clinicaLogoBase64 = base64;
+        statusEl.textContent = "✓ " + file.name + " carregada";
+        statusEl.classList.remove("error");
+        statusEl.classList.add("ok");
+        previewImg.src = base64;
+        previewWrap.hidden = false;
+      } catch (err) {
+        resetLogoUploadUi();
+        statusEl.textContent = String(err?.message || "Falha ao processar a logo.");
+        statusEl.classList.add("error");
+      }
+    });
   }
 
   async function apiGetClinicas() {
@@ -144,7 +226,7 @@
         endereco: document.getElementById("clinicaEndereco")?.value?.trim() || "",
         telefone: document.getElementById("clinicaTelefone")?.value?.trim() || "",
         email: document.getElementById("clinicaEmail")?.value?.trim() || "",
-        logo: document.getElementById("clinicaLogo")?.value?.trim() || "",
+        logo: clinicaLogoBase64 || "",
         responsavel: document.getElementById("clinicaResponsavel")?.value?.trim() || "",
         status: document.getElementById("clinicaStatus")?.value || "ativo",
       };
@@ -183,6 +265,7 @@
       }
 
       form.reset();
+      resetLogoUploadUi();
       await carregarClinicas();
     });
   }
@@ -249,6 +332,8 @@
     if (!ok) return;
 
     bindCadastroClinica();
+    bindLogoUpload();
+    resetLogoUploadUi();
     bindCriarAdminClinica();
     await carregarClinicas();
   });
