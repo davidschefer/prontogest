@@ -824,7 +824,9 @@ app.post("/api/login", async (req, res) => {
     const clinica_id = normalizeClinicaId(func.clinica_id) || DEFAULT_CLINICA_ID;
     const id = String(func.id || "");
     const modulosClinica =
-      typeof superAdminRuntime.getClinicaModulosById === "function"
+      typeof superAdminRuntime.getClinicaModulosByIdAsync === "function"
+        ? await superAdminRuntime.getClinicaModulosByIdAsync(clinica_id)
+        : typeof superAdminRuntime.getClinicaModulosById === "function"
         ? superAdminRuntime.getClinicaModulosById(clinica_id)
         : null;
 
@@ -922,6 +924,8 @@ app.use(
     DEFAULT_CLINICA_ID,
     persistFuncionario,
     runtime: superAdminRuntime,
+    db,
+    dbEnabled: DB_ENABLED,
   })
 );
 
@@ -2819,7 +2823,9 @@ app.delete("/api/faturas/:id", authRequired, async (req, res) => {
 const ordenarFuncionariosDesc = ordenarDescPorISO("createdAt", "createdAt");
 
 app.get("/api/funcionarios", authRequired, requireRole("admin"), (req, res) => {
-  const lista = getFuncionarios(req);
+  const lista = getFuncionarios(req).filter(
+    (f) => String(f?.role || "").trim().toLowerCase() === "funcionario"
+  );
   auditAdd(req, {
     acao: "read",
     entidade: "funcionarios",

@@ -36,12 +36,156 @@ module.exports = function createSuperAdminRouter(deps) {
   const DEFAULT_CLINICA_ID = deps.DEFAULT_CLINICA_ID || "default";
   const persistFuncionario = deps.persistFuncionario;
   const runtime = deps.runtime && typeof deps.runtime === "object" ? deps.runtime : null;
+  const db = deps.db;
+  const dbEnabled = Boolean(deps.dbEnabled && db && typeof db.query === "function");
 
   const clinicas = [];
+  let clinicasTableReady = false;
 
   function getClinicaById(clinicaId) {
     const cid = normalizeClinicaId(clinicaId);
     return clinicas.find((c) => normalizeClinicaId(c.clinica_id) === cid) || null;
+  }
+
+  async function resolveClinicaById(clinicaId) {
+    let clinica = getClinicaById(clinicaId);
+    if (clinica || !dbEnabled) return clinica;
+    try {
+      await loadClinicasFromDb();
+    } catch {}
+    clinica = getClinicaById(clinicaId);
+    return clinica;
+  }
+
+  function parseJsonSafe(raw, fallback) {
+    try {
+      const v = JSON.parse(raw);
+      return v == null ? fallback : v;
+    } catch {
+      return fallback;
+    }
+  }
+
+  function toJsonSafe(value, fallbackObj) {
+    try {
+      return JSON.stringify(value ?? fallbackObj ?? {});
+    } catch {
+      return JSON.stringify(fallbackObj ?? {});
+    }
+  }
+
+  function normalizeClinicaRecord(item) {
+    const modulos = {
+      ...createDefaultModules(),
+      ...(item?.modulos && typeof item.modulos === "object" ? item.modulos : {}),
+    };
+    const personalizacao = {
+      nomeClinica: String(item?.personalizacao?.nomeClinica || item?.nome || "").trim(),
+      cnpj: String(item?.personalizacao?.cnpj || item?.cnpj || "").trim(),
+      endereco: String(item?.personalizacao?.endereco || item?.endereco || "").trim(),
+      telefone: String(item?.personalizacao?.telefone || item?.telefone || "").trim(),
+      logo: String(item?.personalizacao?.logo || item?.logo || "").trim(),
+    };
+    return {
+      id: String(item?.id || ""),
+      nome: String(item?.nome || "").trim(),
+      clinica_id: normalizeClinicaId(item?.clinica_id),
+      cnpj: String(item?.cnpj || "").trim(),
+      endereco: String(item?.endereco || "").trim(),
+      telefone: String(item?.telefone || "").trim(),
+      email: String(item?.email || "").trim(),
+      logo: String(item?.logo || "").trim(),
+      responsavel: String(item?.responsavel || "").trim(),
+      status: String(item?.status || "ativo").trim() || "ativo",
+      modulos,
+      personalizacao,
+      createdAt: String(item?.createdAt || new Date().toISOString()),
+      updatedAt: String(item?.updatedAt || new Date().toISOString()),
+    };
+  }
+
+  async function ensureClinicasTable() {
+    if (!dbEnabled || clinicasTableReady) return;
+    await db.query(
+      `CREATE TABLE IF NOT EXISTS clinicas (
+        id VARCHAR(64) PRIMARY KEY,
+        clinica_id VARCHAR(64) NOT NULL UNIQUE,
+        nome VARCHAR(140) NOT NULL,
+        cnpj VARCHAR(30) NULL,
+        endereco TEXT NULL,
+        telefone VARCHAR(40) NULL,
+        email VARCHAR(140) NULL,
+        responsavel VARCHAR(140) NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'ativo',
+        logo LONGTEXT NULL,
+        modulos LONGTEXT NULL,
+        personalizacao LONGTEXT NULL,
+        createdAt VARCHAR(30) NULL,
+        updatedAt VARCHAR(30) NULL,
+        INDEX idx_clinicas_clinica_id (clinica_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`
+    );
+    clinicasTableReady = true;
+  }
+
+  async function loadClinicasFromDb() {
+    if (!dbEnabled) return null;
+    await ensureClinicasTable();
+    const rows = await db.query("SELECT * FROM clinicas ORDER BY createdAt DESC");
+    const lista = Array.isArray(rows)
+      ? rows.map((r) =>
+          normalizeClinicaRecord({
+            ...r,
+            modulos: parseJsonSafe(r.modulos, createDefaultModules()),
+            personalizacao: parseJsonSafe(r.personalizacao, {}),
+          })
+        )
+      : [];
+    clinicas.length = 0;
+    lista.forEach((x) => clinicas.push(x));
+    return lista;
+  }
+
+  async function upsertClinicaDb(item) {
+    if (!dbEnabled) return;
+    await ensureClinicasTable();
+    const c = normalizeClinicaRecord(item);
+    const sql = `INSERT INTO clinicas (id, clinica_id, nome, cnpj, endereco, telefone, email, responsavel, status, logo, modulos, personalizacao, createdAt, updatedAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE
+      nome=VALUES(nome),
+      cnpj=VALUES(cnpj),
+      endereco=VALUES(endereco),
+      telefone=VALUES(telefone),
+      email=VALUES(email),
+      responsavel=VALUES(responsavel),
+      status=VALUES(status),
+      logo=VALUES(logo),
+      modulos=VALUES(modulos),
+      personalizacao=VALUES(personalizacao),
+      updatedAt=VALUES(updatedAt)`;
+    await db.query(sql, [
+      c.id,
+      c.clinica_id,
+      c.nome,
+      c.cnpj,
+      c.endereco,
+      c.telefone,
+      c.email,
+      c.responsavel,
+      c.status,
+      c.logo,
+      toJsonSafe(c.modulos, createDefaultModules()),
+      toJsonSafe(c.personalizacao, {}),
+      c.createdAt,
+      c.updatedAt,
+    ]);
+  }
+
+  async function deleteClinicaDb(clinicaId) {
+    if (!dbEnabled) return;
+    await ensureClinicasTable();
+    await db.query("DELETE FROM clinicas WHERE clinica_id = ?", [clinicaId]);
   }
 
   function sanitizeAdminOutput(item) {
@@ -68,9 +212,30 @@ module.exports = function createSuperAdminRouter(deps) {
     };
   }
 
+  async function getClinicaModulosByIdAsync(clinicaId) {
+    const local = getClinicaModulosById(clinicaId);
+    if (local) return local;
+    if (!dbEnabled) return null;
+    try {
+      await ensureClinicasTable();
+      const rows = await db.query("SELECT modulos FROM clinicas WHERE clinica_id = ? LIMIT 1", [
+        normalizeClinicaId(clinicaId),
+      ]);
+      const row = Array.isArray(rows) && rows.length ? rows[0] : null;
+      if (!row) return null;
+      return {
+        ...createDefaultModules(),
+        ...parseJsonSafe(row.modulos, {}),
+      };
+    } catch {
+      return null;
+    }
+  }
+
   if (runtime) {
     runtime.getClinicaById = getClinicaById;
     runtime.getClinicaModulosById = getClinicaModulosById;
+    runtime.getClinicaModulosByIdAsync = getClinicaModulosByIdAsync;
   }
 
   router.get("/superadmin", authRequired, requireRole("superadmin"), (req, res) => {
@@ -83,11 +248,17 @@ module.exports = function createSuperAdminRouter(deps) {
     return res.json({ ok: true, role: "superadmin", user: req.user || {} });
   });
 
-  router.get("/clinicas", authRequired, requireRole("superadmin"), (req, res) => {
+  router.get("/clinicas", authRequired, requireRole("superadmin"), async (req, res) => {
+    if (dbEnabled) {
+      try {
+        const itemsDb = await loadClinicasFromDb();
+        return res.json({ ok: true, items: itemsDb || [] });
+      } catch {}
+    }
     return res.json({ ok: true, items: clinicas });
   });
 
-  router.post("/clinicas", authRequired, requireRole("superadmin"), (req, res) => {
+  router.post("/clinicas", authRequired, requireRole("superadmin"), async (req, res) => {
     const body = req.body || {};
 
     const clinica_id = normalizeClinicaId(body.clinica_id);
@@ -95,6 +266,12 @@ module.exports = function createSuperAdminRouter(deps) {
 
     if (!clinica_id || !nome) {
       return res.status(400).json({ ok: false, error: "nome e clinica_id são obrigatórios" });
+    }
+
+    if (dbEnabled) {
+      try {
+        await loadClinicasFromDb();
+      } catch {}
     }
 
     if (getClinicaById(clinica_id)) {
@@ -127,7 +304,13 @@ module.exports = function createSuperAdminRouter(deps) {
       updatedAt: new Date().toISOString(),
     };
 
-    clinicas.unshift(item);
+    const itemNorm = normalizeClinicaRecord(item);
+    clinicas.unshift(itemNorm);
+    if (dbEnabled) {
+      try {
+        await upsertClinicaDb(itemNorm);
+      } catch {}
+    }
 
     auditAdd(req, {
       acao: "create",
@@ -137,10 +320,10 @@ module.exports = function createSuperAdminRouter(deps) {
       meta: { clinica_id, nome },
     });
 
-    return res.status(201).json({ ok: true, item });
+    return res.status(201).json({ ok: true, item: itemNorm });
   });
 
-  router.put("/clinicas/:clinica_id/modulos", authRequired, requireRole("superadmin"), (req, res) => {
+  router.put("/clinicas/:clinica_id/modulos", authRequired, requireRole("superadmin"), async (req, res) => {
     const clinica_id = normalizeClinicaId(req.params.clinica_id);
     const body = req.body || {};
     const mods = body.modulos;
@@ -149,7 +332,7 @@ module.exports = function createSuperAdminRouter(deps) {
       return res.status(400).json({ ok: false, error: "Envie { modulos: {...} }" });
     }
 
-    const clinica = getClinicaById(clinica_id);
+    const clinica = await resolveClinicaById(clinica_id);
     if (!clinica) {
       return res.status(404).json({ ok: false, error: "Clínica não encontrada" });
     }
@@ -160,6 +343,11 @@ module.exports = function createSuperAdminRouter(deps) {
       ...mods,
     };
     clinica.updatedAt = new Date().toISOString();
+    if (dbEnabled) {
+      try {
+        await upsertClinicaDb(clinica);
+      } catch {}
+    }
 
     auditAdd(req, {
       acao: "update",
@@ -171,11 +359,11 @@ module.exports = function createSuperAdminRouter(deps) {
     return res.json({ ok: true, item: clinica });
   });
 
-  router.put("/clinicas/:clinica_id/personalizacao", authRequired, requireRole("superadmin"), (req, res) => {
+  router.put("/clinicas/:clinica_id/personalizacao", authRequired, requireRole("superadmin"), async (req, res) => {
     const clinica_id = normalizeClinicaId(req.params.clinica_id);
     const body = req.body || {};
 
-    const clinica = getClinicaById(clinica_id);
+    const clinica = await resolveClinicaById(clinica_id);
     if (!clinica) {
       return res.status(404).json({ ok: false, error: "Clínica não encontrada" });
     }
@@ -189,6 +377,11 @@ module.exports = function createSuperAdminRouter(deps) {
       logo: String(body.logo || clinica.personalizacao?.logo || clinica.logo || "").trim(),
     };
     clinica.updatedAt = new Date().toISOString();
+    if (dbEnabled) {
+      try {
+        await upsertClinicaDb(clinica);
+      } catch {}
+    }
 
     auditAdd(req, {
       acao: "update",
@@ -200,11 +393,11 @@ module.exports = function createSuperAdminRouter(deps) {
     return res.json({ ok: true, item: clinica });
   });
 
-  router.put("/clinicas/:clinica_id", authRequired, requireRole("superadmin"), (req, res) => {
+  router.put("/clinicas/:clinica_id", authRequired, requireRole("superadmin"), async (req, res) => {
     const clinica_id = normalizeClinicaId(req.params.clinica_id);
     const body = req.body || {};
 
-    const clinica = getClinicaById(clinica_id);
+    const clinica = await resolveClinicaById(clinica_id);
     if (!clinica) {
       return res.status(404).json({ ok: false, error: "Clínica não encontrada" });
     }
@@ -227,6 +420,11 @@ module.exports = function createSuperAdminRouter(deps) {
       logo: clinica.logo,
     };
     clinica.updatedAt = new Date().toISOString();
+    if (dbEnabled) {
+      try {
+        await upsertClinicaDb(clinica);
+      } catch {}
+    }
 
     auditAdd(req, {
       acao: "update",
@@ -238,8 +436,13 @@ module.exports = function createSuperAdminRouter(deps) {
     return res.json({ ok: true, item: clinica });
   });
 
-  router.delete("/clinicas/:clinica_id", authRequired, requireRole("superadmin"), (req, res) => {
+  router.delete("/clinicas/:clinica_id", authRequired, requireRole("superadmin"), async (req, res) => {
     const clinica_id = normalizeClinicaId(req.params.clinica_id);
+    if (dbEnabled) {
+      try {
+        await loadClinicasFromDb();
+      } catch {}
+    }
     const idx = clinicas.findIndex((c) => normalizeClinicaId(c?.clinica_id) === clinica_id);
     if (idx === -1) {
       return res.status(404).json({ ok: false, error: "Clínica não encontrada" });
@@ -247,6 +450,9 @@ module.exports = function createSuperAdminRouter(deps) {
 
     const removida = clinicas[idx];
     clinicas.splice(idx, 1);
+    if (dbEnabled) {
+      deleteClinicaDb(clinica_id).catch(() => {});
+    }
 
     auditAdd(req, {
       acao: "delete",
@@ -267,7 +473,7 @@ module.exports = function createSuperAdminRouter(deps) {
     const clinica_id = normalizeClinicaId(req.params.clinica_id);
     const body = req.body || {};
 
-    const clinica = getClinicaById(clinica_id);
+    const clinica = await resolveClinicaById(clinica_id);
     if (!clinica) {
       return res.status(404).json({ ok: false, error: "Clínica não encontrada" });
     }
@@ -325,9 +531,9 @@ module.exports = function createSuperAdminRouter(deps) {
     return res.status(201).json({ ok: true, item: sanitizeAdminOutput(item) });
   });
 
-  router.get("/clinicas/:clinica_id/admins", authRequired, requireRole("superadmin"), (req, res) => {
+  router.get("/clinicas/:clinica_id/admins", authRequired, requireRole("superadmin"), async (req, res) => {
     const clinica_id = normalizeClinicaId(req.params.clinica_id);
-    const clinica = getClinicaById(clinica_id);
+    const clinica = await resolveClinicaById(clinica_id);
     if (!clinica) {
       return res.status(404).json({ ok: false, error: "Clínica não encontrada" });
     }
@@ -341,7 +547,7 @@ module.exports = function createSuperAdminRouter(deps) {
     const admin_id = String(req.params.admin_id || "").trim();
     const body = req.body || {};
 
-    const clinica = getClinicaById(clinica_id);
+    const clinica = await resolveClinicaById(clinica_id);
     if (!clinica) {
       return res.status(404).json({ ok: false, error: "Clínica não encontrada" });
     }
@@ -399,11 +605,11 @@ module.exports = function createSuperAdminRouter(deps) {
     return res.json({ ok: true, item: sanitizeAdminOutput(funcionarios[idx]) });
   });
 
-  router.delete("/clinicas/:clinica_id/admins/:admin_id", authRequired, requireRole("superadmin"), (req, res) => {
+  router.delete("/clinicas/:clinica_id/admins/:admin_id", authRequired, requireRole("superadmin"), async (req, res) => {
     const clinica_id = normalizeClinicaId(req.params.clinica_id);
     const admin_id = String(req.params.admin_id || "").trim();
 
-    const clinica = getClinicaById(clinica_id);
+    const clinica = await resolveClinicaById(clinica_id);
     if (!clinica) {
       return res.status(404).json({ ok: false, error: "Clínica não encontrada" });
     }
