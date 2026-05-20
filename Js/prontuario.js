@@ -27,6 +27,7 @@
   let pacienteAtual = "";
   let pacienteAtualNome = "";
   let pacientes = [];
+  let documentoFileInput = null;
 
   let modoEdicaoEvolucaoId = null;
 
@@ -59,6 +60,24 @@
 
   function uid() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+
+  function formatarBytes(bytes) {
+    const n = Number(bytes);
+    if (!Number.isFinite(n) || n <= 0) return "0 B";
+    if (n < 1024) return `${n} B`;
+    if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+    if (n < 1024 * 1024 * 1024) return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+    return `${(n / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+  }
+
+  function lerArquivoComoDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(new Error("Falha ao ler arquivo"));
+      reader.readAsDataURL(file);
+    });
   }
 
   function escapeHtml(str) {
@@ -975,16 +994,24 @@
       .map((d) => {
         const nome = escapeHtml(d.nome);
         const desc = escapeHtml(d.descricao || "");
-        const url = String(d.url || "").trim();
+        const url = String(d.url || d.arquivoBase64 || "").trim();
+        const tipoMime = escapeHtml(d.tipoMime || d.tipo || "");
+        const tamanho = formatarBytes(d.tamanhoBytes || d.tamanho || 0);
+        const dataDoc = escapeHtml(d.dataHora || d.data || "");
 
         const linkHtml = url
-          ? `<p><a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">Abrir</a></p>`
-          : "";
+          ? `<p>
+               <a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">Abrir/Visualizar</a>
+               <a href="${escapeHtml(url)}" download="${nome}" style="margin-left:12px;">Baixar</a>
+             </p>`
+          : `<p><em>Arquivo indisponível para visualização.</em></p>`;
 
         return `
           <div class="item">
             <h3>${nome}</h3>
             <p>${desc}</p>
+            <p><strong>Tipo:</strong> ${tipoMime || "-"}</p>
+            <p><strong>Tamanho:</strong> ${escapeHtml(tamanho)} | <strong>Data:</strong> ${dataDoc || "-"}</p>
             ${linkHtml}
             <button class="remover" type="button" onclick="removerDocumento('${escapeHtml(d.id)}')">Remover</button>
           </div>
@@ -995,25 +1022,53 @@
     refreshResumoContadores();
   }
 
-  async function abrirAnexoDocumento() {
+  function initDocumentoFileInput() {
+    if (documentoFileInput) return documentoFileInput;
+
+    const input = document.createElement("input");
+    input.type = "file";
+    input.id = "pepDocumentoFileInput";
+    input.accept = ".pdf,.png,.jpg,.jpeg,.gif,.webp,.bmp,.svg,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.rtf,.odt,.ods,.odp,.csv,application/pdf,image/*,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/plain,text/csv";
+    input.style.display = "none";
+
+    input.addEventListener("change", async (event) => {
+      const file = event?.target?.files?.[0];
+      input.value = "";
+      if (!file) return;
+      await salvarDocumentoSelecionado(file);
+    });
+
+    document.body.appendChild(input);
+    documentoFileInput = input;
+    return input;
+  }
+
+  async function salvarDocumentoSelecionado(file) {
     if (!pacienteAtual) return alert("Selecione um paciente primeiro.");
-
-    const nome = prompt("Nome do documento:");
-    if (!nome || !nome.trim()) return;
-
-    const descricao = prompt("Descrição (opcional):") || "";
-    const url = prompt("Link do documento (opcional):") || "";
+    if (!file) return;
 
     const key = LS_KEYS.documentos(pacienteAtual);
     const dados = lsGetArray(key);
+    let dataUrl = "";
+    try {
+      dataUrl = await lerArquivoComoDataUrl(file);
+    } catch (err) {
+      console.error("Erro ao ler arquivo selecionado:", err);
+      alert("Não foi possível ler o arquivo selecionado.");
+      return;
+    }
 
     const novo = {
       id: uid(),
       pacienteId: pacienteAtual,
-      nome: nome.trim(),
-      descricao: descricao.trim(),
-      url: String(url).trim(),
+      nome: String(file.name || "documento").trim(),
+      descricao: "",
+      tipoMime: String(file.type || "").trim(),
+      tamanhoBytes: Number(file.size || 0),
       dataHora: nowBR(),
+      dataISO: new Date().toISOString(),
+      url: dataUrl,
+      arquivoBase64: dataUrl,
     };
 
     const apiFetchFn = window.apiFetch;
@@ -1021,7 +1076,7 @@
       try {
         const salvo = await pepApiCreate("documentos", novo);
         if (salvo) {
-          dados.unshift(salvo);
+          dados.unshift(Object.assign({}, novo, salvo));
           lsSetArray(key, dados);
           renderDocumentos();
           return;
@@ -1034,6 +1089,13 @@
     dados.unshift(novo);
     lsSetArray(key, dados);
     renderDocumentos();
+  }
+
+  async function abrirAnexoDocumento() {
+    if (!pacienteAtual) return alert("Selecione um paciente primeiro.");
+    const input = initDocumentoFileInput();
+    if (!input) return;
+    input.click();
   }
 
   async function removerDocumento(id) {
@@ -1518,6 +1580,7 @@
 
     const cancelarBtn = $("cancelarEdicaoBtn");
     if (cancelarBtn) cancelarBtn.addEventListener("click", cancelarEdicao);
+    initDocumentoFileInput();
 
     renderPatologias();
     renderVitais();
