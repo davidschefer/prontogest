@@ -1692,6 +1692,29 @@ function getUsuarioIdByEmail(email) {
   return f?.id ? String(f.id) : "";
 }
 
+function isEvolucaoModificationAllowed(req, evolucao) {
+  if (!evolucao || typeof evolucao !== "object") return false;
+
+  const role = String(req.user?.role || "").trim().toLowerCase();
+  if (role === "admin" || role === "superadmin") {
+    return true;
+  }
+
+  if (role !== "funcionario") {
+    return false;
+  }
+
+  const userId = String(req.user?.id || "").trim();
+  const itemUserId = String(evolucao?.usuarioId || "").trim();
+  if (userId && itemUserId && userId === itemUserId) {
+    return true;
+  }
+
+  const userEmail = String(req.user?.email || "").trim().toLowerCase();
+  const itemUsuario = String(evolucao?.usuario || "").trim().toLowerCase();
+  return userEmail && itemUsuario && userEmail === itemUsuario;
+}
+
 async function persistPaciente(p) {
   if (!DB_ENABLED) return;
   const payload = { ...p, endereco: safeJsonStringify(p.endereco || {}) };
@@ -1985,7 +2008,9 @@ function pepRegisterCrud(entity) {
     const body = req.body || {};
 
     const usuarioId =
-      entity === "evolucoes" ? getUsuarioIdByEmail(req.user?.email || "") : "";
+      entity === "evolucoes"
+        ? String(req.user?.id || "").trim() || getUsuarioIdByEmail(req.user?.email || "")
+        : "";
 
     const item = {
       ...body,
@@ -2026,6 +2051,16 @@ function pepRegisterCrud(entity) {
       return res.status(404).json({ ok: false, error: "Item não encontrado" });
     }
 
+    if (entity === "evolucoes") {
+      const existing = pep[entity][idx];
+      if (!isEvolucaoModificationAllowed(req, existing)) {
+        return res.status(403).json({
+          ok: false,
+          error: "Você só pode alterar evoluções criadas por você.",
+        });
+      }
+    }
+
     const now = new Date().toISOString();
     const body = req.body || {};
 
@@ -2064,6 +2099,16 @@ function pepRegisterCrud(entity) {
 
     if (idx === -1) {
       return res.status(404).json({ ok: false, error: "Item não encontrado" });
+    }
+
+    if (entity === "evolucoes") {
+      const existing = pep[entity][idx];
+      if (!isEvolucaoModificationAllowed(req, existing)) {
+        return res.status(403).json({
+          ok: false,
+          error: "Você só pode alterar evoluções criadas por você.",
+        });
+      }
     }
 
     const removido = pep[entity][idx];

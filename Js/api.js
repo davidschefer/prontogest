@@ -20,6 +20,7 @@
     localStorage.removeItem("auth_role");
     localStorage.removeItem("auth_email");
     localStorage.removeItem("auth_logged_in");
+    localStorage.removeItem("auth_id");
   }
 
   function sanitizeBase(url) {
