@@ -2,3 +2,15 @@ backend/node_modules/
 backend/.env
 *.log
 .vscode/
+# Dependências
+node_modules/
+
+# Backups locais
+_backup_superadmin/
+backend/server.backup-antes-pull.js
+
+# Logs
+*.log
+
+# Ambiente
+.env
