@@ -46,8 +46,10 @@ const allowedOrigins = [
   "http://127.0.0.1:3000",
   "https://prontogest.com.br",
   "https://www.prontogest.com.br",
+  "https://app.prontogest.com.br",
   "http://2.24.217.39:3000",
-  "http://2.24.217.39",];
+  "http://2.24.217.39",
+];
 
 if (FRONTEND_URL) allowedOrigins.push(FRONTEND_URL);
 
