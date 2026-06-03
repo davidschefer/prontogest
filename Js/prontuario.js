@@ -30,6 +30,7 @@
   let documentoFileInput = null;
 
   let modoEdicaoEvolucaoId = null;
+  let loteOptionsVisivel = false;
 
   /* ---------------------------
      LocalStorage utils
@@ -148,11 +149,250 @@
   /* ---------------------------
      Usuário logado (para evoluções)
   --------------------------- */
+  function getUsuarioSession() {
+    let user = null;
+    try {
+      user = JSON.parse(localStorage.getItem("auth_user"));
+    } catch {
+      user = null;
+    }
+
+    const role = String(user?.role || localStorage.getItem("auth_role") || "").trim().toLowerCase();
+    const email = String(user?.email || localStorage.getItem("auth_email") || "").trim();
+    const id = String(user?.id || localStorage.getItem("auth_id") || "").trim();
+
+    return {
+      role,
+      email: email.toLowerCase(),
+      id,
+    };
+  }
+
   function getUsuarioLogado() {
     const email = localStorage.getItem("auth_email");
     const logged = localStorage.getItem("auth_logged_in");
     if (logged === "true" && email) return email;
     return "não identificado";
+  }
+
+  function getPacienteById(id) {
+    const pid = String(id || "").trim();
+    return pacientes.find((x) => String(x?.id) === pid) || null;
+  }
+
+  function formatarDataBR(date) {
+    if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
+    const d = String(date.getDate()).padStart(2, "0");
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const y = String(date.getFullYear());
+    return `${d}/${m}/${y}`;
+  }
+
+  function parseEvolucaoDate(evo) {
+    if (!evo || typeof evo !== "object") return null;
+    const iso = String(evo.dataHoraISO || "").trim();
+    if (iso) {
+      const d = new Date(iso);
+      if (!Number.isNaN(d.getTime())) return d;
+    }
+
+    const text = String(evo.dataHora || "").trim();
+    const match = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})(?:\D+(\d{1,2}):(\d{2}))?/);
+    if (match) {
+      const day = Number(match[1]);
+      const month = Number(match[2]) - 1;
+      let year = Number(match[3]);
+      if (year < 100) year += 2000;
+      const hour = Number(match[4] || 0);
+      const minute = Number(match[5] || 0);
+      const d = new Date(year, month, day, hour, minute);
+      if (!Number.isNaN(d.getTime())) return d;
+    }
+
+    const fallback = new Date(text);
+    return Number.isNaN(fallback.getTime()) ? null : fallback;
+  }
+
+  function calcularInicioPeriodo(dias) {
+    const now = new Date();
+    const inicio = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    if (Number.isInteger(dias) && dias > 1) {
+      inicio.setDate(inicio.getDate() - (dias - 1));
+    }
+    return inicio;
+  }
+
+  function filtrarEvolucoesPorPeriodo(evos, tipo, diasPersonalizados) {
+    if (!Array.isArray(evos)) return [];
+    const now = new Date();
+    let inicio;
+
+    switch (tipo) {
+      case "hoje":
+        inicio = calcularInicioPeriodo(1);
+        break;
+      case "7dias":
+        inicio = calcularInicioPeriodo(7);
+        break;
+      case "30dias":
+        inicio = calcularInicioPeriodo(30);
+        break;
+      case "1ano":
+        inicio = calcularInicioPeriodo(365);
+        break;
+      case "personalizado":
+        inicio = calcularInicioPeriodo(diasPersonalizados || 0);
+        break;
+      default:
+        return [];
+    }
+
+    if (!(inicio instanceof Date) || Number.isNaN(inicio.getTime())) return [];
+
+    return evos
+      .map((e) => ({ evo: e, date: parseEvolucaoDate(e) }))
+      .filter((entry) => entry.date && entry.date >= inicio && entry.date <= now)
+      .sort((a, b) => b.date - a.date)
+      .map((entry) => entry.evo);
+  }
+
+  function getPacienteDetalhesPrint() {
+    const paciente = getPacienteById(pacienteAtual);
+    const nome = paciente?.nome || pacienteAtualNome || pacienteAtual || "-";
+    const nascimento = String(paciente?.nascimento || paciente?.dataNascimento || "").trim();
+    const idade = String(paciente?.idade || paciente?.idadeAtual || "").trim();
+    return {
+      nome,
+      nascimento: nascimento || "",
+      idade: idade || "",
+    };
+  }
+
+  function getClinicaNomePrint() {
+    return String(localStorage.getItem("auth_clinica_id") || "").trim();
+  }
+
+  function abrirImpressaoLote() {
+    loteOptionsVisivel = !loteOptionsVisivel;
+    renderEvolucoes();
+  }
+
+  function criarPeriodoLabel(tipo, dias) {
+    switch (tipo) {
+      case "hoje":
+        return "Hoje";
+      case "7dias":
+        return "Últimos 7 dias";
+      case "30dias":
+        return "Últimos 30 dias";
+      case "1ano":
+        return "Último 1 ano";
+      case "personalizado":
+        return dias > 0 ? `Últimos ${dias} dias` : "Período personalizado";
+      default:
+        return "Período de impressão";
+    }
+  }
+
+  function criarHtmlImpressaoLote(evosFiltrados, periodoLabel) {
+    const pacienteInfo = getPacienteDetalhesPrint();
+    const clinica = getClinicaNomePrint();
+    const nomePaciente = escapeHtml(pacienteInfo.nome);
+    const nascimento = escapeHtml(pacienteInfo.nascimento);
+    const idade = escapeHtml(pacienteInfo.idade);
+    const dataImpressao = formatarDataBR(new Date());
+
+    const grupos = [];
+    let ultimoDia = "";
+
+    evosFiltrados.forEach((evo) => {
+      const date = parseEvolucaoDate(evo);
+      const dataDia = formatarDataBR(date || new Date());
+      const horario = date ? String(date.getHours()).padStart(2, "0") + ":" + String(date.getMinutes()).padStart(2, "0") : String(evo.dataHora || "");
+      const usuario = escapeHtml(evo.usuario || "-");
+      const descricao = escapeHtml(evo.descricao || "");
+
+      const bloco = `
+        <div class="evolucao-page">
+          <div class="page-header">
+            <div class="page-date">${dataDia}</div>
+            <div class="page-time">${horario}</div>
+            <div class="page-profissional">${usuario}</div>
+          </div>
+          <div class="page-body">
+            <div class="print-field"><strong>Profissional:</strong> ${usuario}</div>
+            <div class="print-field"><strong>Horário:</strong> ${horario}</div>
+            <div class="print-field"><strong>Texto completo da evolução:</strong></div>
+            <div class="print-text">${descricao}</div>
+          </div>
+        </div>
+      `;
+
+      if (dataDia !== ultimoDia) {
+        ultimoDia = dataDia;
+      }
+
+      grupos.push({ dataDia, bloco });
+    });
+
+    const headerClinica = clinica ? `<div class="print-field"><strong>Clínica:</strong> ${escapeHtml(clinica)}</div>` : "";
+    const nascimentoOuIdade = nascimento
+      ? `<div class="print-field"><strong>Data de nascimento:</strong> ${nascimento}</div>`
+      : idade
+      ? `<div class="print-field"><strong>Idade:</strong> ${idade}</div>`
+      : "";
+
+    return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Impressão em lote de evoluções</title>
+  <style>
+    * { box-sizing: border-box; font-family: Arial, sans-serif; }
+    body { margin: 20px; color: #111; }
+    h1 { margin: 0 0 10px 0; font-size: 20px; }
+    .print-header { margin-bottom: 18px; }
+    .print-header p { margin: 4px 0; }
+    .page-header { margin-bottom: 12px; }
+    .page-header .page-date { font-size: 18px; font-weight: bold; margin-bottom: 6px; }
+    .page-header .page-time, .page-header .page-profissional { font-size: 14px; color: #333; }
+    .print-field { margin: 6px 0; }
+    .print-text { white-space: pre-wrap; line-height: 1.5; margin-top: 8px; }
+    .evolucao-page { margin-bottom: 24px; page-break-after: always; break-inside: avoid; }
+    .evolucao-page:last-child { page-break-after: auto; }
+    .page-title { font-size: 16px; margin: 14px 0 4px; }
+    @media print {
+      .evolucao-page { page-break-after: always; }
+      .evolucao-page:last-child { page-break-after: auto; }
+      .page-header, .page-body { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="print-header">
+    <h1>Impressão em lote de evoluções</h1>
+    <p><strong>Paciente:</strong> ${nomePaciente}</p>
+    ${nascimentoOuIdade}
+    ${headerClinica}
+    <p><strong>Período selecionado:</strong> ${escapeHtml(periodoLabel)}</p>
+    <p><strong>Data de impressão:</strong> ${dataImpressao}</p>
+  </div>
+  ${grupos.map((g) => g.bloco).join("")}
+</body>
+</html>`;
+  }
+
+  function podeModificarEvolucao(evo) {
+    const { role, email, id } = getUsuarioSession();
+    if (role === "admin" || role === "superadmin") return true;
+    if (role !== "funcionario") return false;
+
+    const itemUsuarioId = String(evo?.usuarioId || "").trim();
+    if (id && itemUsuarioId && id === itemUsuarioId) return true;
+
+    const itemEmail = String(evo?.usuario || "").trim().toLowerCase();
+    return email && itemEmail && email === itemEmail;
   }
 
   /* ---------------------------
@@ -1098,6 +1338,74 @@
     input.click();
   }
 
+  function imprimirEvolucoesLote(periodo) {
+    if (!pacienteAtual) {
+      return alert("Selecione um paciente antes de usar a impressão em lote.");
+    }
+
+    const diasMap = {
+      "hoje": 1,
+      "7dias": 7,
+      "30dias": 30,
+      "1ano": 365,
+    };
+
+    const dias = diasMap[periodo] || 0;
+    const periodoLabel = criarPeriodoLabel(periodo, dias);
+    const evolucoes = lsGetArray(LS_KEYS.evolucoes(pacienteAtual));
+    const filtradas = filtrarEvolucoesPorPeriodo(evolucoes, periodo, dias);
+
+    if (!filtradas.length) {
+      return alert(`Nenhuma evolução encontrada para ${periodoLabel.toLowerCase()}.`);
+    }
+
+    const html = criarHtmlImpressaoLote(filtradas, periodoLabel);
+    const w = window.open("", "_blank", "width=900,height=700");
+    if (!w) {
+      return alert("Seu navegador bloqueou o pop-up de impressão. Permita pop-ups para imprimir.");
+    }
+
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+    w.focus();
+    w.print();
+  }
+
+  function imprimirEvolucoesLotePersonalizado() {
+    if (!pacienteAtual) {
+      return alert("Selecione um paciente antes de usar a impressão em lote.");
+    }
+
+    const input = document.getElementById("loteDiasPersonalizados");
+    const raw = input ? String(input.value || "").trim() : "";
+    const dias = Number.parseInt(raw, 10);
+
+    if (!Number.isInteger(dias) || dias <= 0) {
+      return alert("Informe um número de dias válido (maior que zero). Use apenas números positivos.");
+    }
+
+    const periodoLabel = criarPeriodoLabel("personalizado", dias);
+    const evolucoes = lsGetArray(LS_KEYS.evolucoes(pacienteAtual));
+    const filtradas = filtrarEvolucoesPorPeriodo(evolucoes, "personalizado", dias);
+
+    if (!filtradas.length) {
+      return alert(`Nenhuma evolução encontrada para ${periodoLabel.toLowerCase()}.`);
+    }
+
+    const html = criarHtmlImpressaoLote(filtradas, periodoLabel);
+    const w = window.open("", "_blank", "width=900,height=700");
+    if (!w) {
+      return alert("Seu navegador bloqueou o pop-up de impressão. Permita pop-ups para imprimir.");
+    }
+
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+    w.focus();
+    w.print();
+  }
+
   async function removerDocumento(id) {
     if (!pacienteAtual) return alert("Selecione um paciente primeiro.");
 
@@ -1126,7 +1434,22 @@
     const div = $("listaEvolucoes");
     if (!div) return;
 
-    div.innerHTML = `<h2>Evoluções Registradas</h2>`;
+    const visibleClass = loteOptionsVisivel ? "inline-flex" : "none";
+    div.innerHTML = `
+      <div class="evo-toolbar" style="display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:14px;">
+        <button class="btn btn-secondary btn-sm" type="button" onclick="abrirImpressaoLote()">Impressão em lote</button>
+        <div id="loteOptionsContainer" style="display:${visibleClass}; align-items:center; gap:8px; flex-wrap:wrap;">
+          <span style="font-size:0.95rem; color:#333;">Selecionar período:</span>
+          <button class="btn btn-secondary btn-sm" type="button" onclick="imprimirEvolucoesLote('hoje')">Hoje</button>
+          <button class="btn btn-secondary btn-sm" type="button" onclick="imprimirEvolucoesLote('7dias')">7 dias</button>
+          <button class="btn btn-secondary btn-sm" type="button" onclick="imprimirEvolucoesLote('30dias')">30 dias</button>
+          <button class="btn btn-secondary btn-sm" type="button" onclick="imprimirEvolucoesLote('1ano')">1 ano</button>
+          <input id="loteDiasPersonalizados" type="number" min="1" placeholder="Dias" style="width:76px; padding:6px 8px; border-radius:6px; border:1px solid #ccc; background:#fff; color:#111;" />
+          <button class="btn btn-secondary btn-sm" type="button" onclick="imprimirEvolucoesLotePersonalizado()">Customizado</button>
+        </div>
+      </div>
+      <h2>Evoluções Registradas</h2>
+    `;
 
     if (!pacienteAtual) {
       div.innerHTML += `<p>Selecione um paciente.</p>`;
@@ -1150,6 +1473,7 @@
       const descricaoCurta = escapeHtml(resumirDescricaoEvolucao(evo.descricao || ""));
       const descricaoCompleta = escapeHtml(evo.descricao || "");
 
+      const podeEditar = podeModificarEvolucao(evo);
       item.innerHTML = `
         <h3>${titulo}</h3>
         <p><strong>Profissional:</strong> ${usuario}</p>
@@ -1176,8 +1500,8 @@
 
         <div class="evo-actions">
           <button class="btn btn-sm btn-imprimir" type="button" onclick="imprimirEvolucao('${escapeHtml(evo.id)}')">Imprimir</button>
-          <button class="btn btn-primary btn-sm" type="button" onclick="editarEvolucao('${escapeHtml(evo.id)}')">Editar</button>
-          <button class="btn btn-danger btn-sm" type="button" onclick="removerEvolucao('${escapeHtml(evo.id)}')">Remover</button>
+          ${podeEditar ? `<button class="btn btn-primary btn-sm" type="button" onclick="editarEvolucao('${escapeHtml(evo.id)}')">Editar</button>
+          <button class="btn btn-danger btn-sm" type="button" onclick="removerEvolucao('${escapeHtml(evo.id)}')">Remover</button>` : ""}
         </div>
       `;
 
@@ -1276,12 +1600,14 @@
       return;
     }
 
+    const usuarioSession = getUsuarioSession();
     const novo = {
       id: uid(),
       pacienteId: pacienteAtual,
       dataHora: nowBR(),
       dataHoraISO: new Date().toISOString(),
       usuario,
+      usuarioId: usuarioSession.id || "",
       tipo,
       descricao,
       pa,
@@ -1554,6 +1880,9 @@
   window.editarEvolucao = editarEvolucao;
   window.removerEvolucao = removerEvolucao;
   window.imprimirEvolucao = imprimirEvolucao;
+  window.abrirImpressaoLote = abrirImpressaoLote;
+  window.imprimirEvolucoesLote = imprimirEvolucoesLote;
+  window.imprimirEvolucoesLotePersonalizado = imprimirEvolucoesLotePersonalizado;
 
   /* ============================================================
      Init
