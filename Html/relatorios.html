@@ -38,54 +38,98 @@
     <!-- CONTEÚDO -->
     <div class="content">
         <h1>Relatórios Hospitalares</h1>
-
-        <div class="card">
-            <h2>Internações</h2>
-            <div class="indicador">
-                <span>Total de Pacientes Internados:</span>
-                <span id="internados">12</span>
+        <!-- Indicadores principais em cards responsivos -->
+        <div class="reports-grid">
+            <div class="card small-card">
+                <h3>Total de pacientes</h3>
+                <div class="big-number" id="pacientesTotal">0</div>
             </div>
-            <div class="indicador">
-                <span>Pacientes em Triagem:</span>
-                <span id="triagem">5</span>
+
+            <div class="card small-card">
+                <h3>Triagens registradas</h3>
+                <div class="big-number" id="triagem">0</div>
+            </div>
+
+            <div class="card small-card">
+                <h3>Consultas / Agendamentos</h3>
+                <div class="big-number" id="consultasAgendadas">0</div>
+            </div>
+
+            <div class="card small-card">
+                <h3>Prescrições</h3>
+                <div class="big-number" id="prescricoes">0</div>
+            </div>
+
+            <div class="card small-card">
+                <h3>Leitos ocupados</h3>
+                <div class="big-number" id="leitosOcupados">0</div>
+            </div>
+
+            <div class="card small-card">
+                <h3>Medicamentos em estoque</h3>
+                <div class="big-number" id="estoqueMedicamentos">0</div>
+            </div>
+
+            <div class="card small-card">
+                <h3>Itens críticos</h3>
+                <div class="big-number" id="medicamentosCriticos">0</div>
             </div>
         </div>
 
-        <div class="card">
-            <h2>Ocupação de Leitos</h2>
-            <div class="indicador">
-                <span>Leitos Ocupados:</span>
-                <span id="leitosOcupados">8</span>
-            </div>
-            <div class="indicador">
-                <span>Leitos Livres:</span>
-                <span id="leitosLivres">2</span>
+        <!-- Filtros de geração -->
+        <div class="card filters-card">
+            <h2>Gerar Relatório</h2>
+            <div class="filters-row">
+                <label>Período</label>
+                <select id="f_periodo">
+                    <option value="7dias">Últimos 7 dias</option>
+                    <option value="30dias" selected>Últimos 30 dias</option>
+                    <option value="1ano">Último 1 ano</option>
+                </select>
+
+                <label>Tipo</label>
+                <select id="f_tipo">
+                    <option value="resumo">Resumo Operacional</option>
+                    <option value="estoque">Estoque</option>
+                    <option value="leitos">Leitos</option>
+                </select>
+
+                <label>Paciente / Profissional (opcional)</label>
+                <input id="f_search" placeholder="Nome do paciente ou profissional" />
+
+                <div class="filters-actions">
+                    <button class="btn btn-primary" id="btnGerar">Gerar / Atualizar</button>
+                </div>
             </div>
         </div>
 
-        <div class="card">
-            <h2>Estoque da Farmácia</h2>
-            <div class="indicador">
-                <span>Medicamentos em Estoque:</span>
-                <span id="estoqueMedicamentos">45</span>
+        <!-- Resumo consolidado e insights -->
+        <div class="summary-grid">
+            <div class="card" id="resumoConsolidado">
+                <h2>Resumo Operacional</h2>
+                <div class="indicador-list">
+                    <div class="indicador"><span>Pacientes:</span><span id="res_pacientes">-</span></div>
+                    <div class="indicador"><span>Triagens:</span><span id="res_triagens">-</span></div>
+                    <div class="indicador"><span>Consultas (período):</span><span id="res_consultas">-</span></div>
+                    <div class="indicador"><span>Leitos ocupados:</span><span id="res_leitos">-</span></div>
+                    <div class="indicador"><span>Itens críticos:</span><span id="res_criticos">-</span></div>
+                </div>
             </div>
-            <div class="indicador">
-                <span>Medicamentos Críticos:</span>
-                <span id="medicamentosCriticos">3</span>
+
+            <div class="card" id="insightsBlock">
+                <h2>Insights Operacionais</h2>
+                <div id="insightsList" class="insights-list">
+                    <div class="evo-empty">Carregando insights...</div>
+                </div>
             </div>
         </div>
 
-        <div class="card card-sgh-md">
-            <h2>Produção</h2>
-            <div class="indicador">
-                <span>Consultas Agendadas:</span>
-                <span id="consultasAgendadas">20</span>
+        <!-- Lista/Histórico de relatórios (se existir) -->
+        <div class="card" id="reportsList">
+            <h2>Relatórios Gerados</h2>
+            <div id="reportsContainer">
+                <p class="evo-empty">Nenhum histórico de relatórios disponível.</p>
             </div>
-            <div class="indicador">
-                <span>Prescrições Realizadas:</span>
-                <span id="prescricoes">15</span>
-            </div>
-            <button class="btn-export" onclick="exportar()">Exportar PDF</button>
         </div>
     </div>
 

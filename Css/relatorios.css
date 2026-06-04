@@ -28,6 +28,33 @@ h1 {
   margin: 0 auto 30px;
   box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
 }
+
+/* Grid de indicadores no topo */
+.reports-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:16px;
+  margin-bottom:18px;
+}
+.small-card{ padding:18px; text-align:center; }
+.small-card h3{ margin:0 0 6px 0; font-size:14px; color:#6b7280; }
+.big-number{ font-size:24px; font-weight:700; color:#0a1a33; }
+
+/* filtros */
+.filters-card .filters-row{ display:grid; grid-template-columns:200px 200px 1fr 160px; gap:12px; align-items:end; }
+.filters-card label{ font-size:13px; color:#374151; }
+.filters-card select, .filters-card input{ padding:8px 10px; border-radius:8px; border:1px solid #e6edf6; background:#f8fafc; }
+.filters-actions{ display:flex; align-items:center; }
+
+/* resumo e insights */
+.summary-grid{ display:grid; grid-template-columns:1fr 420px; gap:16px; margin-top:8px; margin-bottom:18px; }
+.indicador-list .indicador{ display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed #eef2f7; }
+.insights-list{ display:flex; flex-direction:column; gap:8px; max-height:260px; overflow:auto; }
+.insight-item{ background:#fff7ed; border:1px solid #fbe7c6; padding:8px 10px; border-radius:8px; color:#78350f; }
+.evo-empty{ color:#6b7280; font-size:14px; }
+
+/* reports list */
+#reportsContainer .report-row{ display:flex; justify-content:space-between; gap:12px; padding:10px; border-bottom:1px solid #f1f5f9; align-items:center; }
 h2 {
   margin-top: 0;
   color: #0a1a33;
@@ -78,6 +105,9 @@ p {
   .btn-export {
     width: 100%;
   }
+  .reports-grid{ grid-template-columns:repeat(2,1fr); }
+  .summary-grid{ grid-template-columns:1fr; }
+  .filters-card .filters-row{ grid-template-columns:1fr; }
 }
 @media print {
   body {

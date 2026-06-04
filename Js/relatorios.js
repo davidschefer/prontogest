@@ -227,6 +227,76 @@
 
     // se existir no HTML
     setText("pacientesTotal", pacientesArr.length);
+
+    // retornar métricas para uso em resumo/insights
+    return {
+      pacientes: pacientesArr.length,
+      triagens: triagensTotal,
+      leitosOcupados,
+      leitosLivres,
+      consultas: consultasArr.length,
+      prescricoes: prescricoesArr.length,
+      estoqueMedicamentos: medicamentosEmEstoque,
+      medicamentosCriticos,
+      fonteApi: typeof window.apiFetch === "function"
+    };
+  }
+
+  function renderResumo(metrics) {
+    try {
+      if (!metrics) {
+        setText('res_pacientes', '-');
+        setText('res_triagens', '-');
+        setText('res_consultas', '-');
+        setText('res_leitos', '-');
+        setText('res_criticos', '-');
+        return;
+      }
+      setText('res_pacientes', metrics.pacientes);
+      setText('res_triagens', metrics.triagens);
+      setText('res_consultas', metrics.consultas);
+      setText('res_leitos', metrics.leitosOcupados);
+      setText('res_criticos', metrics.medicamentosCriticos);
+    } catch (e) {
+      console.warn('Erro renderResumo', e);
+    }
+  }
+
+  function renderInsights(metrics) {
+    const container = document.getElementById('insightsList');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const items = [];
+    if (!metrics) {
+      container.innerHTML = '<div class="evo-empty">Nenhum insight disponível.</div>';
+      return;
+    }
+
+    if (metrics.medicamentosCriticos && Number(metrics.medicamentosCriticos) > 0) {
+      items.push({ type: 'critico', text: `${metrics.medicamentosCriticos} itens críticos no estoque` });
+    }
+
+    if (metrics.leitosOcupados && metrics.leitosOcupados > 0) {
+      const pct = metrics.leitosOcupados + ' leitos ocupados';
+      items.push({ type: 'leitos', text: pct });
+    }
+
+    if (metrics.triagens && metrics.triagens > metrics.consultas) {
+      items.push({ type: 'triagem', text: `Triagens (${metrics.triagens}) superiores a consultas (${metrics.consultas})` });
+    }
+
+    if (!items.length) {
+      container.innerHTML = '<div class="evo-empty">Nenhum ponto de atenção detectado.</div>';
+      return;
+    }
+
+    items.forEach((it) => {
+      const el = document.createElement('div');
+      el.className = 'insight-item';
+      el.textContent = it.text;
+      container.appendChild(el);
+    });
   }
 
   /* ---------------------------
@@ -285,7 +355,9 @@
   --------------------------- */
   async function init() {
     try {
-      await atualizarIndicadores();
+      const metrics = await atualizarIndicadores();
+      renderResumo(metrics);
+      renderInsights(metrics);
     } catch (err) {
       const msg = err?.message || err;
       console.warn("Relatório: falha ao atualizar indicadores:", msg);
@@ -297,6 +369,20 @@
 
     // mantém compat com onclick
     window.exportar = exportar;
+    // ligar botão gerar
+    const btn = document.getElementById('btnGerar');
+    if (btn) btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      btn.disabled = true;
+      try {
+        const m = await atualizarIndicadores();
+        renderResumo(m);
+        renderInsights(m);
+      } catch (err) {
+        console.warn('Falha ao gerar relatório:', err);
+      }
+      btn.disabled = false;
+    });
   }
 
   if (document.readyState === "loading") {
