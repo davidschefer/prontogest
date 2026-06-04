@@ -43,6 +43,31 @@
     );
   }
 
+  function parseDataString(text) {
+    if (text === undefined || text === null) return null;
+    const str = String(text).trim();
+    if (!str) return null;
+
+    const asDate = new Date(str);
+    if (!Number.isNaN(asDate.getTime())) return asDate;
+
+    const brMatch = str.match(
+      /^(\d{2})[\/\-](\d{2})[\/\-](\d{4})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/
+    );
+    if (brMatch) {
+      const day = Number(brMatch[1]);
+      const month = Number(brMatch[2]) - 1;
+      const year = Number(brMatch[3]);
+      const hour = Number(brMatch[4] || 0);
+      const minute = Number(brMatch[5] || 0);
+      const second = Number(brMatch[6] || 0);
+      const d = new Date(year, month, day, hour, minute, second);
+      if (!Number.isNaN(d.getTime())) return d;
+    }
+
+    return null;
+  }
+
   function parsePossivelData(item) {
     if (!item || typeof item !== "object") return null;
 
@@ -50,6 +75,7 @@
       item.data,          // consultas
       item.dataHora,      // faturas / evoluções
       item.dataHoraISO,   // prescrições / triagens (se usar)
+      item.dataHoraBR,    // alguns itens usam BR
       item.createdAt,     // várias entidades
       item.criadoEm,      // funcionários
       item.updatedAt,
@@ -57,11 +83,25 @@
     ].filter(Boolean);
 
     for (const c of candidatos) {
-      const d = new Date(c);
-      if (!Number.isNaN(d.getTime())) return d;
+      const d = parseDataString(c);
+      if (d) return d;
     }
 
     return null;
+  }
+
+  function ehHoje(data) {
+    return isSameDayLocal(data, new Date());
+  }
+
+  function estaNasUltimasHoras(data, horas = 48) {
+    if (!(data instanceof Date) || Number.isNaN(data.getTime())) return false;
+    const diff = Date.now() - data.getTime();
+    return diff >= 0 && diff <= horas * 60 * 60 * 1000;
+  }
+
+  function obterDataRegistro(item) {
+    return parsePossivelData(item);
   }
 
   function normalizarTexto(txt) {
@@ -89,18 +129,15 @@
 
   function contarHoje(arr) {
     const hoje = new Date();
-    let encontrouAlgumaData = false;
     let count = 0;
 
     for (const item of arr) {
-      const d = parsePossivelData(item);
+      const d = obterDataRegistro(item);
       if (!d) continue;
-      encontrouAlgumaData = true;
-      if (isSameDayLocal(d, hoje)) count++;
+      if (ehHoje(d)) count++;
     }
 
-    // Se não conseguiu extrair data de ninguém, retorna null para manter fallback (usar total)
-    return encontrouAlgumaData ? count : null;
+    return count;
   }
 
   // ---------------------------
@@ -233,14 +270,14 @@
     const emptyEl = document.getElementById("agendaEmpty");
     if (!listEl || !emptyEl) return;
 
-    const hoje = new Date();
-    const comData = consultas.filter((c) => parsePossivelData(c));
-    const deHoje = comData.filter((c) => isSameDayLocal(parsePossivelData(c), hoje));
+    const deHoje = consultas.filter((c) => {
+      const data = obterDataRegistro(c);
+      return data && ehHoje(data);
+    });
 
-    const base = deHoje.length ? deHoje : consultas;
-    const sorted = [...base].sort((a, b) => {
-      const da = parsePossivelData(a)?.getTime() || 0;
-      const db = parsePossivelData(b)?.getTime() || 0;
+    const sorted = [...deHoje].sort((a, b) => {
+      const da = obterDataRegistro(a)?.getTime() || 0;
+      const db = obterDataRegistro(b)?.getTime() || 0;
       return da - db;
     });
 
@@ -249,6 +286,7 @@
     if (!top.length) {
       listEl.innerHTML = "";
       emptyEl.style.display = "block";
+      emptyEl.textContent = "Nenhuma consulta agendada para hoje.";
       return;
     }
 
@@ -321,10 +359,15 @@
       alertas.push(a);
     }
 
+    function isRecentRegistro(item) {
+      const data = obterDataRegistro(item);
+      return data && (ehHoje(data) || estaNasUltimasHoras(data, 48));
+    }
+
     // ---------- Triagens ----------
-    triagens.forEach((t) => {
+    triagens.filter(isRecentRegistro).forEach((t) => {
       const nome = t?.pacienteNome || getPacienteNome(t?.pacienteId, pacientes);
-      const data = parsePossivelData(t);
+      const data = obterDataRegistro(t);
       const ts = data ? data.getTime() : 0;
 
       const temp = parseNumeroFlex(t?.temp);
@@ -571,12 +614,12 @@
       { termo: "dor intensa", motivo: "Dor intensa", prioridade: "atencao" },
     ];
 
-    evolucoes.forEach((e) => {
+    evolucoes.filter(isRecentRegistro).forEach((e) => {
       const texto = normalizarTexto(e?.descricao || e?.evolucao || e?.texto || "");
       if (!texto) return;
 
       const nome = e?.pacienteNome || getPacienteNome(e?.pacienteId, pacientes);
-      const data = parsePossivelData(e);
+      const data = obterDataRegistro(e);
       const ts = data ? data.getTime() : 0;
 
       regras.forEach((r) => {
@@ -666,7 +709,7 @@
     });
 
     if (!alertas.length) {
-      listEl.innerHTML = `<div class="empty-state">Nenhum ponto de atenção no momento.</div>`;
+      listEl.innerHTML = `<div class="empty-state">Nenhum ponto de atenção recente.</div>`;
       return;
     }
 
@@ -776,20 +819,11 @@ const evolucoes = lsArray("evolucoes_cache_v1");
 
     const triagensHoje = contarHoje(triagens);
     const consultasHoje = contarHoje(consultas);
+    const pacientesHoje = contarHoje(pacientes);
 
     setText("pacientesTotal", Array.isArray(pacientes) ? pacientes.length : 0);
-    setText(
-      "triagensHoje",
-      triagensHoje === null
-        ? (Array.isArray(triagens) ? triagens.length : 0)
-        : triagensHoje
-    );
-    setText(
-      "consultasHoje",
-      consultasHoje === null
-        ? (Array.isArray(consultas) ? consultas.length : 0)
-        : consultasHoje
-    );
+    setText("triagensHoje", triagensHoje);
+    setText("consultasHoje", consultasHoje);
     setText("leitosOcupadosCard", leitosOcupados);
 
     renderAgenda({
@@ -798,8 +832,8 @@ const evolucoes = lsArray("evolucoes_cache_v1");
     });
 
     renderAlertas({
-      triagensHoje: triagensHoje === null ? (Array.isArray(triagens) ? triagens.length : 0) : triagensHoje,
-      consultasHoje: consultasHoje === null ? (Array.isArray(consultas) ? consultas.length : 0) : consultasHoje,
+      triagensHoje,
+      consultasHoje,
       leitosOcupados,
     });
 
@@ -809,19 +843,9 @@ const evolucoes = lsArray("evolucoes_cache_v1");
       pacientes: Array.isArray(pacientes) ? pacientes : [],
     });
 
-    setText("resumoPacientes", Array.isArray(pacientes) ? pacientes.length : 0);
-    setText(
-      "resumoConsultas",
-      consultasHoje === null
-        ? (Array.isArray(consultas) ? consultas.length : 0)
-        : consultasHoje
-    );
-    setText(
-      "resumoTriagens",
-      triagensHoje === null
-        ? (Array.isArray(triagens) ? triagens.length : 0)
-        : triagensHoje
-    );
+    setText("resumoPacientes", pacientesHoje);
+    setText("resumoConsultas", consultasHoje);
+    setText("resumoTriagens", triagensHoje);
     setText("resumoAtendimento", leitosOcupados);
 
     setText("funcionariosAtivos", Array.isArray(funcionarios) ? funcionarios.length : 0);
