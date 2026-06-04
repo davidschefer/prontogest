@@ -423,6 +423,11 @@
     return p?.nome || "";
   }
 
+  function getPacienteById(id) {
+    const pid = String(id || "");
+    return pacientes.find((x) => String(x?.id) === pid) || null;
+  }
+
   function popularSelectPacientes() {
     const sel = $("pacienteSelect");
     if (!sel) return;
@@ -657,9 +662,19 @@
       return;
     }
 
-    const nomePaciente = pacienteAtualNome || getPacienteNomeById(pacienteAtual) || "-";
+    const paciente = getPacienteById(pacienteAtual);
+    const nomePaciente = pacienteAtualNome || paciente?.nome || "-";
     nomeEl.textContent = nomePaciente;
     if (idEl) idEl.textContent = `ID: ${pacienteAtual}`;
+
+    const fotoBox = $("resumoFotoPaciente");
+    if (fotoBox) {
+      if (paciente?.fotoDataUrl) {
+        fotoBox.innerHTML = `<img src="${escapeHtml(paciente.fotoDataUrl)}" alt="Foto do paciente">`;
+      } else {
+        fotoBox.innerHTML = `<span>Sem foto</span>`;
+      }
+    }
 
     let triagem = null;
     try {
@@ -1223,7 +1238,20 @@
       return;
     }
 
-    const dados = lsGetArray(LS_KEYS.documentos(pacienteAtual));
+    const paciente = getPacienteById(pacienteAtual);
+    const docsPaciente = Array.isArray(paciente?.documentosPaciente)
+      ? paciente.documentosPaciente
+      : [];
+    const dadosPEP = lsGetArray(LS_KEYS.documentos(pacienteAtual));
+    const allDocs = [...docsPaciente, ...dadosPEP];
+    const ids = new Set();
+    const dados = allDocs.filter((d) => {
+      if (!d || !d.id) return false;
+      if (ids.has(d.id)) return false;
+      ids.add(d.id);
+      return true;
+    });
+
     if (!dados.length) {
       wrap.innerHTML = `<p>Nenhum documento anexado.</p>`;
       refreshResumoContadores();

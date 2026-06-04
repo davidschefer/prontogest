@@ -1,0 +1,3 @@
+ALTER TABLE pacientes
+  ADD COLUMN IF NOT EXISTS fotoDataUrl LONGTEXT,
+  ADD COLUMN IF NOT EXISTS documentosPaciente LONGTEXT;

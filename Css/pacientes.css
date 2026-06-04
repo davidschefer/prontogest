@@ -105,6 +105,63 @@
    .obrigatorio {
        color: red;
    }
+   .foto-paciente-preview {
+       width: 160px;
+       height: 160px;
+       border: 1px dashed #cbd5e1;
+       border-radius: 16px;
+       margin-top: 8px;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       background: #f8fafc;
+       overflow: hidden;
+   }
+   .foto-paciente-preview img {
+       width: 100%;
+       height: 100%;
+       object-fit: cover;
+   }
+   .foto-actions,
+   .documento-actions {
+       margin-top: 12px;
+       display: flex;
+       gap: 12px;
+       flex-wrap: wrap;
+       align-items: center;
+   }
+   .documentos-paciente-lista {
+       margin-top: 10px;
+       padding: 12px;
+       background: #f8fafc;
+       border: 1px solid #d0d7e2;
+       border-radius: 12px;
+       max-height: 200px;
+       overflow-y: auto;
+   }
+   .documentos-paciente-lista .doc-item {
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+       gap: 10px;
+       padding: 8px 0;
+       border-bottom: 1px solid #e2e8f0;
+       font-size: 14px;
+   }
+   .documentos-paciente-lista .doc-item:last-child {
+       border-bottom: none;
+   }
+   .documentos-paciente-lista .doc-item button {
+       padding: 6px 10px;
+       border-radius: 10px;
+       border: none;
+       background: #cc0000;
+       color: white;
+       cursor: pointer;
+   }
+   .documentos-paciente-lista .doc-item button:hover {
+       background: #a80000;
+   }
    #planoSaude {
        display: none;
    }

@@ -83,6 +83,48 @@
 
         <div class="linha-form">
           <div>
+            <label>Foto do paciente:</label>
+            <div class="foto-paciente-preview" id="pacienteFotoPreview">
+              <span>Sem foto</span>
+            </div>
+            <div class="foto-actions">
+              <button type="button" onclick="selecionarFotoPaciente()">Escolher / Tirar foto</button>
+              <button type="button" onclick="removerFotoPaciente()">Remover foto</button>
+            </div>
+            <input
+              type="file"
+              id="fotoPacienteInput"
+              accept="image/jpeg,image/png,image/webp"
+              capture="environment"
+              style="display:none;"
+            >
+          </div>
+          <div></div>
+        </div>
+
+        <div class="linha-form">
+          <div>
+            <label>Documentos essenciais:</label>
+            <div id="documentosPacienteLista" class="documentos-paciente-lista">
+              <p>Nenhum documento anexado.</p>
+            </div>
+            <div class="documento-actions">
+              <button type="button" onclick="abrirDocumentoPaciente()">Anexar documento</button>
+              <small>Máximo 5 arquivos, pdf/jpg/jpeg/png/webp/doc/docx, até 5 MB cada.</small>
+            </div>
+            <input
+              type="file"
+              id="documentoPacienteInput"
+              accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx"
+              multiple
+              style="display:none;"
+            >
+          </div>
+          <div></div>
+        </div>
+
+        <div class="linha-form">
+          <div>
             <label>Convênio:</label>
             <select id="convenio" onchange="verificarCampos()">
               <option value="">Selecione...</option>

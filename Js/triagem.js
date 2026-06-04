@@ -23,6 +23,9 @@
   const btnRegistrar = document.getElementById("registrarBtn");
   const btnCancelar = document.getElementById("cancelarEdicaoBtn");
   const msgBox = document.getElementById("triagemMsg");
+  const pacientePreviewFoto = document.getElementById("triagemPacienteFoto");
+  const pacientePreviewNome = document.getElementById("triagemPacienteNome");
+  const pacientePreviewCpf = document.getElementById("triagemPacienteCpf");
 
   const evolucaoEl = document.getElementById("evolucao");
   const contadorEl = document.getElementById("contadorEvolucao");
@@ -139,6 +142,30 @@
   function getPacienteNome(pacienteId) {
     const p = getPacientePorId(pacienteId);
     return p?.nome || "Paciente";
+  }
+
+  function renderTriagemPacientePreview() {
+    if (!pacientePreviewFoto || !pacientePreviewNome || !pacientePreviewCpf) return;
+    const pacienteId = String(pacienteSelect?.value || "").trim();
+    const paciente = getPacientePorId(pacienteId);
+
+    if (!paciente) {
+      pacientePreviewFoto.innerHTML = `<span>Sem foto</span>`;
+      pacientePreviewNome.textContent = "Nome do paciente";
+      pacientePreviewCpf.textContent = "CPF/ID";
+      return;
+    }
+
+    if (paciente.fotoDataUrl) {
+      pacientePreviewFoto.innerHTML = `<img src="${escapeHtml(paciente.fotoDataUrl)}" alt="Foto do paciente" />`;
+    } else {
+      pacientePreviewFoto.innerHTML = `<span>Sem foto</span>`;
+    }
+
+    pacientePreviewNome.textContent = paciente.nome || "Paciente";
+    pacientePreviewCpf.textContent = paciente.cpf
+      ? `CPF: ${paciente.cpf}`
+      : `ID: ${paciente.id}`;
   }
 
   function formatarProfissional(t) {
@@ -349,6 +376,7 @@
     if (typeof apiFetchFn !== "function") {
       pacientes = lsGetArray(LS_PACIENTES);
       popularPacientes();
+      renderTriagemPacientePreview();
       return;
     }
 
@@ -365,6 +393,7 @@
     }
 
     popularPacientes();
+    renderTriagemPacientePreview();
   }
 
   function popularPacientes() {
@@ -1001,6 +1030,9 @@
     });
 
     await carregarPacientes();
+    if (pacienteSelect) {
+      pacienteSelect.addEventListener("change", renderTriagemPacientePreview);
+    }
     await carregarTriagens();
 
     setModoEdicao(false);

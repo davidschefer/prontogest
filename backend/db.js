@@ -42,6 +42,8 @@ const schemaStatements = [
     convenio VARCHAR(60),
     planoSaude VARCHAR(80),
     endereco TEXT,
+    fotoDataUrl LONGTEXT,
+    documentosPaciente LONGTEXT,
     createdAt VARCHAR(30),
     updatedAt VARCHAR(30),
     INDEX idx_pacientes_clinica (clinica_id)

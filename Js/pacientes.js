@@ -10,6 +10,8 @@
 
   // modo edição
   let editandoId = null;
+  let pacienteFotoDataUrl = "";
+  let pacienteDocumentos = [];
 
   // fallback key (mantém seu padrão atual)
   const LS_KEY_PACIENTES = "pacientes_lista_v1";
@@ -78,6 +80,177 @@
     return d1 === nums[9] && d2 === nums[10];
   }
 
+  function uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+
+  function nowBR() {
+    return new Date().toLocaleString("pt-BR");
+  }
+
+  function lerArquivoComoDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(new Error("Falha ao ler arquivo"));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function validarArquivoFoto(file) {
+    if (!file || !file.name) return "Foto inválida. Selecione um arquivo JPG, JPEG, PNG ou WEBP.";
+
+    const nome = String(file.name || "").toLowerCase();
+    const ext = nome.split(".").pop();
+    const tiposAceitos = ["jpg", "jpeg", "png", "webp"];
+    const mimesAceitos = ["image/jpeg", "image/png", "image/webp"];
+
+    const extValida = tiposAceitos.includes(ext);
+    const mimeValido = !file.type || mimesAceitos.includes(file.type);
+
+    if (!extValida || !mimeValido) {
+      return "Foto inválida. Envie JPG, JPEG, PNG ou WEBP.";
+    }
+
+    if (Number(file.size || 0) > 2 * 1024 * 1024) {
+      return "Foto muito grande. Máximo 2 MB.";
+    }
+
+    return "";
+  }
+
+  function validarDocumentoPaciente(file) {
+    if (!file || !file.name) return "Documento inválido. Selecione um arquivo PDF, JPG, JPEG, PNG, WEBP, DOC ou DOCX.";
+
+    const nome = String(file.name || "").toLowerCase();
+    const ext = nome.split(".").pop();
+    const tiposAceitos = ["pdf", "jpg", "jpeg", "png", "webp", "doc", "docx"];
+    const mimesAceitos = [
+      "application/pdf",
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+
+    const extValida = tiposAceitos.includes(ext);
+    const mimeValido = !file.type || mimesAceitos.includes(file.type);
+
+    if (!extValida || !mimeValido) {
+      return "Documento inválido. Envie PDF, JPG, JPEG, PNG, WEBP, DOC ou DOCX.";
+    }
+
+    if (Number(file.size || 0) > 5 * 1024 * 1024) {
+      return "Documento muito grande. Máximo 5 MB.";
+    }
+
+    return "";
+  }
+
+  function atualizarPreviewFoto() {
+    const pane = document.getElementById("pacienteFotoPreview");
+    if (!pane) return;
+    if (pacienteFotoDataUrl) {
+      pane.innerHTML = `<img src="${pacienteFotoDataUrl}" alt="Foto do paciente">`;
+    } else {
+      pane.innerHTML = `<span>Sem foto</span>`;
+    }
+  }
+
+  function renderDocumentosPaciente() {
+    const wrap = document.getElementById("documentosPacienteLista");
+    if (!wrap) return;
+    if (!pacienteDocumentos.length) {
+      wrap.innerHTML = `<p>Nenhum documento anexado.</p>`;
+      return;
+    }
+    wrap.innerHTML = pacienteDocumentos
+      .map(
+        (doc) => `
+        <div class="doc-item">
+          <span>${escapeHtml(doc.nome || "Documento")}</span>
+          <button type="button" onclick="removerDocumentoPaciente('${escapeHtml(doc.id)}')">Remover</button>
+        </div>
+      `
+      )
+      .join("");
+  }
+
+  function selecionarFotoPaciente() {
+    const input = document.getElementById("fotoPacienteInput");
+    if (input) input.click();
+  }
+
+  async function onFotoPacienteChange(event) {
+    const file = event?.target?.files?.[0];
+    if (!file) return;
+    const erro = validarArquivoFoto(file);
+    if (erro) {
+      alert(erro);
+      event.target.value = "";
+      return;
+    }
+    try {
+      pacienteFotoDataUrl = await lerArquivoComoDataUrl(file);
+      atualizarPreviewFoto();
+    } catch (err) {
+      console.error(err);
+      alert("Não foi possível ler a foto selecionada.");
+    }
+    event.target.value = "";
+  }
+
+  function removerFotoPaciente() {
+    pacienteFotoDataUrl = "";
+    const input = document.getElementById("fotoPacienteInput");
+    if (input) input.value = "";
+    atualizarPreviewFoto();
+  }
+
+  function abrirDocumentoPaciente() {
+    const input = document.getElementById("documentoPacienteInput");
+    if (input) input.click();
+  }
+
+  async function onDocumentoPacienteChange(event) {
+    const files = Array.from(event?.target?.files || []);
+    if (!files.length) return;
+    for (const file of files) {
+      if (pacienteDocumentos.length >= 5) {
+        alert("Máximo de 5 documentos essenciais por paciente.");
+        break;
+      }
+      const erro = validarDocumentoPaciente(file);
+      if (erro) {
+        alert(erro);
+        continue;
+      }
+      try {
+        const dataUrl = await lerArquivoComoDataUrl(file);
+        pacienteDocumentos.unshift({
+          id: uid(),
+          nome: String(file.name || "Documento").trim(),
+          tipoMime: String(file.type || "").trim(),
+          tamanhoBytes: Number(file.size || 0),
+          dataHora: nowBR(),
+          arquivoBase64: dataUrl,
+          url: dataUrl,
+        });
+      } catch (err) {
+        console.error(err);
+        alert(`Não foi possível anexar ${file.name || "este documento"}.`);
+      }
+    }
+    renderDocumentosPaciente();
+    if (event.target) event.target.value = "";
+  }
+
+  function removerDocumentoPaciente(id) {
+    pacienteDocumentos = pacienteDocumentos.filter((doc) => String(doc.id) !== String(id));
+    renderDocumentosPaciente();
+  }
+
   function verificarCampos() {
     const convenio = (el("convenio")?.value || "").trim();
     const planoDiv = el("planoSaude");
@@ -132,6 +305,12 @@
     if (el("planoSaude")) el("planoSaude").style.display = "none";
     if (el("planoSaudeInput")) el("planoSaudeInput").value = "";
 
+    // foto e documentos
+    pacienteFotoDataUrl = "";
+    pacienteDocumentos = [];
+    atualizarPreviewFoto();
+    renderDocumentosPaciente();
+
     // sai do modo edição
     editandoId = null;
 
@@ -169,6 +348,9 @@
         estado: (el("estado")?.value || "").trim(),
         cep: (el("cep")?.value || "").trim(),
       },
+
+      fotoDataUrl: pacienteFotoDataUrl || "",
+      documentosPaciente: pacienteDocumentos,
     };
   }
 
@@ -497,6 +679,13 @@
     if (el("estado")) el("estado").value = end.estado || "";
     if (el("cep")) el("cep").value = end.cep || "";
 
+    pacienteFotoDataUrl = p.fotoDataUrl ? String(p.fotoDataUrl) : "";
+    pacienteDocumentos = Array.isArray(p.documentosPaciente)
+      ? [...p.documentosPaciente]
+      : [];
+    atualizarPreviewFoto();
+    renderDocumentosPaciente();
+
     const btn = el("cadastrarBtn");
     if (btn) btn.textContent = "Salvar Alterações";
 
@@ -552,6 +741,11 @@
   // Expor função para HTML (sem mudar onclick)
   // ======================
   window.cadastrar = cadastrar;
+  window.selecionarFotoPaciente = selecionarFotoPaciente;
+  window.removerFotoPaciente = removerFotoPaciente;
+  window.abrirDocumentoPaciente = abrirDocumentoPaciente;
+  window.removerDocumentoPaciente = removerDocumentoPaciente;
+  window.verificarCampos = verificarCampos;
 
   // ======================
   // Listeners e init
@@ -560,8 +754,16 @@
     input.addEventListener("input", verificarCampos);
   });
 
+  const fotoInput = el("fotoPacienteInput");
+  if (fotoInput) fotoInput.addEventListener("change", onFotoPacienteChange);
+
+  const docInput = el("documentoPacienteInput");
+  if (docInput) docInput.addEventListener("change", onDocumentoPacienteChange);
+
   // estado inicial
   verificarCampos();
+  atualizarPreviewFoto();
+  renderDocumentosPaciente();
 
   function init() {
     carregarPacientes();
@@ -573,10 +775,3 @@
     init();
   }
 })();
-function verificarCampos() {
-  // Se você ainda não definiu a lógica, deixa vazio por enquanto
-  // ou coloca um console.log para confirmar:
-  // console.log("verificarCampos acionado");
-}
-
-window.verificarCampos = verificarCampos;

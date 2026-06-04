@@ -18,6 +18,41 @@ display:grid;
 gap:20px;
 margin-bottom:20px;
 }
+.paciente-preview{
+  display:flex;
+  gap:16px;
+  align-items:center;
+  padding:16px;
+  background:#f8fafc;
+  border:1px solid #d0d7e2;
+  border-radius:16px;
+  margin-bottom:20px;
+}
+.paciente-preview-foto{
+  width:96px;
+  height:96px;
+  background:#ffffff;
+  border:1px dashed #cbd5e1;
+  border-radius:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+.paciente-preview-foto img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.paciente-preview-info strong{
+  display:block;
+  font-size:16px;
+  margin-bottom:4px;
+}
+.paciente-preview-info span{
+  color:#475569;
+  font-size:14px;
+}
 .grid-3{grid-template-columns:repeat(3,1fr);}
 .grid-2{grid-template-columns:repeat(2,1fr);}
 .grid-1{grid-template-columns:1fr;}

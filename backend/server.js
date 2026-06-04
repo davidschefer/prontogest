@@ -28,7 +28,7 @@ const MODO_DEMO =
 // Middlewares globais
 // ================================
 
-app.use(express.json());
+app.use(express.json({ limit: "60mb" }));
 
 // Servir arquivos estáticos (HTML, CSS, JS, IMG)
 app.use("/Html", express.static(path.join(__dirname, "..", "Html")));
@@ -104,7 +104,7 @@ const dbClinicaCols = {
   consultas: false,
   faturas: false,
   farmacia_estoque: false,
-  farmacia_movimentos: false,
+  farmacia_movimentacoes: false,
   medicamentos_padrao: false,
   pep_patologias: false,
   pep_vitais: false,
@@ -112,6 +112,11 @@ const dbClinicaCols = {
   pep_documentos: false,
   pep_evolucoes: false,
   auditoria: false,
+};
+
+const dbPacienteCols = {
+  fotoDataUrl: false,
+  documentosPaciente: false,
 };
 
 function normalizeClinicaId(v) {
@@ -230,7 +235,7 @@ async function detectClinicaColumns() {
     "consultas",
     "faturas",
     "farmacia_estoque",
-    "farmacia_movimentos",
+    "farmacia_movimentacoes",
     "medicamentos_padrao",
     "pep_patologias",
     "pep_vitais",
@@ -248,6 +253,25 @@ async function detectClinicaColumns() {
       dbClinicaCols[t] = Array.isArray(rows) && rows.length > 0;
     } catch (e) {
       console.warn("DB: falha ao detectar clinica_id em", t, e?.message || e);
+    }
+  }
+}
+
+async function detectPacienteColumns() {
+  if (!DB_ENABLED) return;
+  const dbName = String(process.env.MYSQL_DATABASE || "").trim();
+  if (!dbName) return;
+
+  const columns = ["fotoDataUrl", "documentosPaciente"];
+  for (const column of columns) {
+    try {
+      const rows = await db.query(
+        "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'pacientes' AND COLUMN_NAME = ?",
+        [dbName, column]
+      );
+      dbPacienteCols[column] = Array.isArray(rows) && rows.length > 0;
+    } catch (e) {
+      console.warn("DB: falha ao detectar coluna pacientes.", column, e?.message || e);
     }
   }
 }
@@ -974,6 +998,8 @@ app.post("/api/pacientes", authRequired, async (req, res) => {
     convenio,
     planoSaude,
     endereco,
+    fotoDataUrl,
+    documentosPaciente,
   } = req.body || {};
 
   if (!nome || String(nome).trim().length < 3) {
@@ -1014,6 +1040,11 @@ app.post("/api/pacientes", authRequired, async (req, res) => {
       estado: end.estado ? String(end.estado).trim() : "",
       cep: end.cep ? String(end.cep).trim() : "",
     },
+
+    fotoDataUrl: fotoDataUrl ? String(fotoDataUrl) : "",
+    documentosPaciente: Array.isArray(documentosPaciente)
+      ? documentosPaciente
+      : [],
 
     createdAt: new Date().toISOString(),
   };
@@ -1148,6 +1179,17 @@ app.put("/api/pacientes/:id", authRequired, async (req, res) => {
           ? String(end.cep).trim()
           : pacientes[idx].endereco?.cep,
     },
+
+    fotoDataUrl:
+      body.fotoDataUrl !== undefined
+        ? String(body.fotoDataUrl || "")
+        : pacientes[idx].fotoDataUrl,
+    documentosPaciente:
+      Array.isArray(body.documentosPaciente)
+        ? body.documentosPaciente
+        : Array.isArray(pacientes[idx].documentosPaciente)
+        ? pacientes[idx].documentosPaciente
+        : [],
 
     updatedAt: new Date().toISOString(),
   };
@@ -1506,6 +1548,7 @@ async function loadAllFromDb() {
   if (!DB_ENABLED) return;
   await db.init();
   await detectClinicaColumns();
+  await detectPacienteColumns();
 
   const pacientesRows = await db.query("SELECT * FROM pacientes");
   pacientes.length = 0;
@@ -1513,6 +1556,9 @@ async function loadAllFromDb() {
     pacientes.push({
       ...r,
       endereco: safeJsonParse(r.endereco, {}),
+      documentosPaciente: Array.isArray(r.documentosPaciente)
+        ? r.documentosPaciente
+        : safeJsonParse(r.documentosPaciente, []),
     });
   });
 
@@ -1719,7 +1765,11 @@ function isEvolucaoModificationAllowed(req, evolucao) {
 
 async function persistPaciente(p) {
   if (!DB_ENABLED) return;
-  const payload = { ...p, endereco: safeJsonStringify(p.endereco || {}) };
+  const payload = {
+    ...p,
+    endereco: safeJsonStringify(p.endereco || {}),
+    documentosPaciente: safeJsonStringify(Array.isArray(p.documentosPaciente) ? p.documentosPaciente : []),
+  };
   const fields = [
     "id",
     "nome",
@@ -1734,6 +1784,8 @@ async function persistPaciente(p) {
     "createdAt",
     "updatedAt",
   ];
+  if (dbPacienteCols.fotoDataUrl) fields.push("fotoDataUrl");
+  if (dbPacienteCols.documentosPaciente) fields.push("documentosPaciente");
   if (dbClinicaCols.pacientes) fields.push("clinica_id");
   await dbUpsert("pacientes", payload, fields);
 }

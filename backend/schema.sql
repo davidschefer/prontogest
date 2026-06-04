@@ -25,6 +25,8 @@ CREATE TABLE IF NOT EXISTS pacientes (
   convenio VARCHAR(60),
   planoSaude VARCHAR(80),
   endereco TEXT,
+  fotoDataUrl LONGTEXT,
+  documentosPaciente LONGTEXT,
   createdAt VARCHAR(30),
   updatedAt VARCHAR(30)
 );
