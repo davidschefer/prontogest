@@ -1492,48 +1492,60 @@
       return;
     }
 
+    // renderizar cada evolução como card estruturado (data/hora, profissional, tipo, texto, ações)
     dados.forEach((evo) => {
-      const item = document.createElement("div");
-      item.className = "item";
+      const card = document.createElement("article");
+      card.className = "evo-card";
 
-      const titulo = `${escapeHtml(evo.dataHora || "-")} - ${escapeHtml(evo.tipo || "Evolução")}`;
-      const usuario = escapeHtml(evo.usuario || "-");
+      const dateObj = parseEvolucaoDate(evo) || new Date();
+      const dataDia = formatarDataBR(dateObj);
+      const horario = dateObj ? String(dateObj.getHours()).padStart(2, "0") + ":" + String(dateObj.getMinutes()).padStart(2, "0") : String(evo.dataHora || "");
+
+      const profissional = escapeHtml(evo.usuario || "-");
+      const tipo = escapeHtml(evo.tipo || "Evolução");
       const descricaoCurta = escapeHtml(resumirDescricaoEvolucao(evo.descricao || ""));
       const descricaoCompleta = escapeHtml(evo.descricao || "");
 
       const podeEditar = podeModificarEvolucao(evo);
-      item.innerHTML = `
-        <h3>${titulo}</h3>
-        <p><strong>Profissional:</strong> ${usuario}</p>
-        <div class="evo-compact">
-          <div class="evo-desc" title="${descricaoCompleta}">
-            <strong>Descricao:</strong> ${descricaoCurta}
-          </div>
-          <div class="evo-vitais">
-            <p>
-              <strong>PA:</strong> ${escapeHtml(evo.pa)} |
-              <strong>FC:</strong> ${escapeHtml(evo.fc)} |
-              <strong>FR:</strong> ${escapeHtml(evo.fr)} |
-              <strong>SAT:</strong> ${escapeHtml(evo.sat)} |
-              <strong>Temp:</strong> ${escapeHtml(evo.temp)} |
-              <strong>HGT:</strong> ${escapeHtml(evo.hgt)}
-            </p>
-            <p>
-              <strong>SVD:</strong> ${escapeHtml(evo.svd)} |
-              <strong>Diurese:</strong> ${escapeHtml(evo.diurese)} |
-              <strong>Evacuacao:</strong> ${escapeHtml(evo.evacuacao)}
-            </p>
+
+      card.innerHTML = `
+        <header class="evo-card-header">
+          <div class="evo-card-date"><div class="evo-card-day">${escapeHtml(dataDia)}</div><div class="evo-card-time">${escapeHtml(horario)}</div></div>
+          <div class="evo-card-meta"><div class="evo-card-profissional">${profissional}</div><div class="evo-card-tipo">${tipo}</div></div>
+        </header>
+
+        <div class="evo-card-body" title="${descricaoCompleta}">
+          <div class="evo-text">${descricaoCurta}</div>
+          <div class="evo-compact">
+            <div class="evo-desc" style="display:none;">${descricaoCompleta}</div>
+            <div class="evo-vitais">
+              <p>
+                <strong>PA:</strong> ${escapeHtml(evo.pa)} |
+                <strong>FC:</strong> ${escapeHtml(evo.fc)} |
+                <strong>FR:</strong> ${escapeHtml(evo.fr)} |
+                <strong>SAT:</strong> ${escapeHtml(evo.sat)} |
+                <strong>Temp:</strong> ${escapeHtml(evo.temp)} |
+                <strong>HGT:</strong> ${escapeHtml(evo.hgt)}
+              </p>
+              <p>
+                <strong>SVD:</strong> ${escapeHtml(evo.svd)} |
+                <strong>Diurese:</strong> ${escapeHtml(evo.diurese)} |
+                <strong>Evacuacao:</strong> ${escapeHtml(evo.evacuacao)}
+              </p>
+            </div>
           </div>
         </div>
 
-        <div class="evo-actions">
-          <button class="btn btn-sm btn-imprimir" type="button" onclick="imprimirEvolucao('${escapeHtml(evo.id)}')">Imprimir</button>
-          ${podeEditar ? `<button class="btn btn-primary btn-sm" type="button" onclick="editarEvolucao('${escapeHtml(evo.id)}')">Editar</button>
-          <button class="btn btn-danger btn-sm" type="button" onclick="removerEvolucao('${escapeHtml(evo.id)}')">Remover</button>` : ""}
-        </div>
+        <footer class="evo-card-footer">
+          <div class="evo-actions">
+            <button class="btn btn-sm btn-imprimir" type="button" onclick="imprimirEvolucao('${escapeHtml(evo.id)}')">Imprimir</button>
+            ${podeEditar ? `<button class="btn btn-primary btn-sm" type="button" onclick="editarEvolucao('${escapeHtml(evo.id)}')">Editar</button>
+            <button class="btn btn-danger btn-sm" type="button" onclick="removerEvolucao('${escapeHtml(evo.id)}')">Remover</button>` : ""}
+          </div>
+        </footer>
       `;
 
-      div.appendChild(item);
+      div.appendChild(card);
     });
 
     refreshResumoContadores();
