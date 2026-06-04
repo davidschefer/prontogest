@@ -1492,7 +1492,7 @@
       return;
     }
 
-    // renderizar cada evolução como card estruturado (data/hora, profissional, tipo, texto, ações)
+    // renderizar cada evolução como card organizado com chips condicionais
     dados.forEach((evo) => {
       const card = document.createElement("article");
       card.className = "evo-card";
@@ -1508,41 +1508,49 @@
 
       const podeEditar = podeModificarEvolucao(evo);
 
-      card.innerHTML = `
-        <header class="evo-card-header">
-          <div class="evo-card-date"><div class="evo-card-day">${escapeHtml(dataDia)}</div><div class="evo-card-time">${escapeHtml(horario)}</div></div>
-          <div class="evo-card-meta"><div class="evo-card-profissional">${profissional}</div><div class="evo-card-tipo">${tipo}</div></div>
-        </header>
+      // montar chips apenas quando houver valores
+      const vitaisKeys = [
+        {k: 'pa', label: 'PA'},
+        {k: 'fc', label: 'FC'},
+        {k: 'fr', label: 'FR'},
+        {k: 'temp', label: 'Temp'},
+        {k: 'sat', label: 'SAT'},
+        {k: 'hgt', label: 'HGT'},
+        {k: 'svd', label: 'SVD'},
+        {k: 'diurese', label: 'Diurese'},
+        {k: 'evacuacao', label: 'Evacuação'}
+      ];
 
-        <div class="evo-card-body" title="${descricaoCompleta}">
-          <div class="evo-text">${descricaoCurta}</div>
-          <div class="evo-compact">
-            <div class="evo-desc" style="display:none;">${descricaoCompleta}</div>
-            <div class="evo-vitais">
-              <p>
-                <strong>PA:</strong> ${escapeHtml(evo.pa)} |
-                <strong>FC:</strong> ${escapeHtml(evo.fc)} |
-                <strong>FR:</strong> ${escapeHtml(evo.fr)} |
-                <strong>SAT:</strong> ${escapeHtml(evo.sat)} |
-                <strong>Temp:</strong> ${escapeHtml(evo.temp)} |
-                <strong>HGT:</strong> ${escapeHtml(evo.hgt)}
-              </p>
-              <p>
-                <strong>SVD:</strong> ${escapeHtml(evo.svd)} |
-                <strong>Diurese:</strong> ${escapeHtml(evo.diurese)} |
-                <strong>Evacuacao:</strong> ${escapeHtml(evo.evacuacao)}
-              </p>
-            </div>
+      const chips = vitaisKeys
+        .map((vk) => {
+          const val = evo[vk.k];
+          if (val === undefined || val === null || String(val).trim() === '') return null;
+          return `<span class="evo-chip"><strong>${vk.label}:</strong> ${escapeHtml(val)}</span>`;
+        })
+        .filter(Boolean);
+
+      // status badge simples: 'Atualizada' se houver updatedAt, senão 'Registrada'
+      const statusBadge = evo.updatedAt ? 'Atualizada' : 'Registrada';
+
+      card.innerHTML = `
+        <div class="evo-head">
+          <div class="evo-meta">
+            <div class="evo-type">${tipo}</div>
+            <div class="evo-profissional">${profissional}</div>
           </div>
+          <div class="evo-status">${escapeHtml(statusBadge)} <span class="evo-datetime">${escapeHtml(dataDia)} ${escapeHtml(horario)}</span></div>
         </div>
 
-        <footer class="evo-card-footer">
-          <div class="evo-actions">
-            <button class="btn btn-sm btn-imprimir" type="button" onclick="imprimirEvolucao('${escapeHtml(evo.id)}')">Imprimir</button>
-            ${podeEditar ? `<button class="btn btn-primary btn-sm" type="button" onclick="editarEvolucao('${escapeHtml(evo.id)}')">Editar</button>
-            <button class="btn btn-danger btn-sm" type="button" onclick="removerEvolucao('${escapeHtml(evo.id)}')">Remover</button>` : ""}
-          </div>
-        </footer>
+        <div class="evo-body" title="${descricaoCompleta}">
+          <div class="evo-text">${descricaoCurta}</div>
+          ${chips.length ? `<div class="evo-grid">${chips.join('')}</div>` : ''}
+        </div>
+
+        <div class="evo-actions">
+          <button class="btn btn-sm btn-imprimir" type="button" onclick="imprimirEvolucao('${escapeHtml(evo.id)}')">Imprimir</button>
+          ${podeEditar ? `<button class="btn btn-primary btn-sm" type="button" onclick="editarEvolucao('${escapeHtml(evo.id)}')">Editar</button>
+          <button class="btn btn-danger btn-sm" type="button" onclick="removerEvolucao('${escapeHtml(evo.id)}')">Remover</button>` : ""}
+        </div>
       `;
 
       div.appendChild(card);
