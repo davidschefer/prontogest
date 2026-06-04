@@ -28,6 +28,29 @@ h1 {
   margin: 0 auto 30px;
   box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
 }
+
+/* Finance top grid */
+.finance-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px; }
+.small-card{ padding:16px; text-align:center; }
+.small-card h3{ margin:0 0 6px 0; font-size:14px; color:#6b7280; }
+.big-number{ font-size:20px; font-weight:700; color:#0a1a33; }
+
+/* filtros */
+.filters-card .filters-row{ display:grid; grid-template-columns:200px 160px 160px 1fr 140px; gap:12px; align-items:end; }
+.filters-card label{ font-size:13px; color:#374151; }
+.filters-card select, .filters-card input{ padding:8px 10px; border-radius:8px; border:1px solid #e6edf6; background:#f8fafc; }
+.filters-actions{ display:flex; align-items:center; }
+
+/* lista e resumo */
+.summary-block{ display:flex; gap:16px; margin-bottom:16px; }
+.summary-card{ flex:1; padding:12px; }
+.launch-list{ display:grid; gap:12px; }
+.status-badge{ padding:6px 8px; border-radius:999px; background:#f1f5f9; border:1px solid #e6edf6; font-size:12px; }
+
+@media (max-width:900px){
+  .finance-grid{ grid-template-columns:repeat(2,1fr); }
+  .filters-card .filters-row{ grid-template-columns:1fr; }
+}
 label {
   font-weight: bold;
   color: #0a1a33;

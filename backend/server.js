@@ -1898,7 +1898,12 @@ async function persistFatura(f) {
     "pacienteId",
     "pacienteNome",
     "descricao",
+    "tipo",
+    "categoria",
     "valor",
+    "vencimentoISO",
+    "formaPagamento",
+    "observacoes",
     "status",
     "convenio",
     "usuario",
@@ -2828,6 +2833,11 @@ app.post("/api/faturas", authRequired, async (req, res) => {
   const convenio = body.convenio ? String(body.convenio).trim() : "";
   const valorNum = Number(body.valor);
   const descricao = body.descricao ? String(body.descricao).trim() : "";
+  const tipo = body.tipo ? String(body.tipo).trim() : "";
+  const categoria = body.categoria ? String(body.categoria).trim() : "";
+  const vencimentoISO = body.vencimentoISO ? String(body.vencimentoISO).trim() : "";
+  const formaPagamento = body.formaPagamento ? String(body.formaPagamento).trim() : "";
+  const observacoes = body.observacoes ? String(body.observacoes).trim() : "";
 
   if (!convenio || !Number.isFinite(valorNum) || valorNum <= 0 || !descricao) {
     return res
@@ -2846,6 +2856,11 @@ app.post("/api/faturas", authRequired, async (req, res) => {
     convenio,
     valor: valorNum,
     descricao,
+    tipo,
+    categoria,
+    vencimentoISO,
+    formaPagamento,
+    observacoes,
 
     usuario: body.usuario ? String(body.usuario) : req.user?.email || "",
     dataHora: body.dataHora ? String(body.dataHora) : "",
@@ -2879,6 +2894,63 @@ app.post("/api/faturas", authRequired, async (req, res) => {
   });
 
   return res.status(201).json({ ok: true, item });
+});
+
+app.put("/api/faturas/:id", authRequired, async (req, res) => {
+  const { id } = req.params;
+  const clinica_id = getClinicaIdFromReq(req);
+  const idx = findIndexByClinica(faturamentos, id, clinica_id);
+
+  if (idx === -1) {
+    return res.status(404).json({ ok: false, error: "Fatura não encontrada" });
+  }
+
+  const body = req.body || {};
+
+  const pacienteId = body.pacienteId ? String(body.pacienteId).trim() : faturamentos[idx].pacienteId || "";
+  if (pacienteId && !pacienteExistePorId(pacienteId, clinica_id)) {
+    return res.status(404).json({ ok: false, error: "Paciente não encontrado" });
+  }
+
+  const valorNum = Number(body.valor !== undefined ? body.valor : faturamentos[idx].valor);
+  if (!Number.isFinite(valorNum) || valorNum <= 0) {
+    return res.status(400).json({ ok: false, error: "Valor inválido" });
+  }
+
+  faturamentos[idx] = {
+    ...faturamentos[idx],
+    ...body,
+    pacienteId,
+    pacienteNome: body.pacienteNome ? String(body.pacienteNome).trim() : faturamentos[idx].pacienteNome || "",
+    convenio: body.convenio ? String(body.convenio).trim() : faturamentos[idx].convenio || "",
+    valor: valorNum,
+    descricao: body.descricao ? String(body.descricao).trim() : faturamentos[idx].descricao || "",
+    tipo: body.tipo ? String(body.tipo).trim() : faturamentos[idx].tipo || "",
+    categoria: body.categoria ? String(body.categoria).trim() : faturamentos[idx].categoria || "",
+    vencimentoISO: body.vencimentoISO ? String(body.vencimentoISO).trim() : faturamentos[idx].vencimentoISO || "",
+    formaPagamento: body.formaPagamento ? String(body.formaPagamento).trim() : faturamentos[idx].formaPagamento || "",
+    observacoes: body.observacoes ? String(body.observacoes).trim() : faturamentos[idx].observacoes || "",
+    updatedAt: new Date().toISOString(),
+    clinica_id: faturamentos[idx].clinica_id || clinica_id,
+  };
+
+  if (DB_ENABLED) {
+    try {
+      await persistFatura(faturamentos[idx]);
+    } catch (e) {
+      console.warn("DB: falha ao atualizar fatura:", e?.message || e);
+    }
+  }
+
+  auditAdd(req, {
+    acao: "update",
+    entidade: "faturas",
+    entidadeId: id,
+    detalhe: "Fatura atualizada",
+    meta: { pacienteId: faturamentos[idx].pacienteId || "" },
+  });
+
+  return res.json({ ok: true, item: faturamentos[idx] });
 });
 
 app.delete("/api/faturas/:id", authRequired, async (req, res) => {

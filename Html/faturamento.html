@@ -39,6 +39,103 @@
     <div class="content">
         <h1>Faturamento</h1>
 
+        <!-- Indicadores financeiros no topo -->
+        <div class="finance-grid">
+            <div class="card small-card">
+                <h3>Entradas do mês</h3>
+                <div class="big-number" id="entradasMes">R$ 0,00</div>
+            </div>
+            <div class="card small-card">
+                <h3>Saídas do mês</h3>
+                <div class="big-number" id="saidasMes">R$ 0,00</div>
+            </div>
+            <div class="card small-card">
+                <h3>Saldo do mês</h3>
+                <div class="big-number" id="saldoMes">R$ 0,00</div>
+            </div>
+            <div class="card small-card">
+                <h3>Contas a receber</h3>
+                <div class="big-number" id="contasReceber">0</div>
+            </div>
+            <div class="card small-card">
+                <h3>Contas pagas</h3>
+                <div class="big-number" id="contasPagas">0</div>
+            </div>
+            <div class="card small-card">
+                <h3>Contas vencidas</h3>
+                <div class="big-number" id="contasVencidas">0</div>
+            </div>
+            <div class="card small-card">
+                <h3>Total de lançamentos</h3>
+                <div class="big-number" id="totalLancamentos">0</div>
+            </div>
+        </div>
+
+        <!-- Filtros principais -->
+        <div class="card filters-card">
+            <h2>Filtros</h2>
+            <div class="filters-row">
+                <div>
+                    <label>Período</label>
+                    <select id="f_periodo">
+                        <option value="30dias">Últimos 30 dias</option>
+                        <option value="7dias">Últimos 7 dias</option>
+                        <option value="1ano">Último 1 ano</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Status</label>
+                    <select id="f_status">
+                        <option value="">Todos</option>
+                        <option value="pago">Pago</option>
+                        <option value="pendente">Pendente</option>
+                        <option value="vencido">Vencido</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Tipo</label>
+                    <select id="f_tipo">
+                        <option value="">Todos</option>
+                        <option value="entrada">Entrada</option>
+                        <option value="saida">Saída</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Paciente / Responsável</label>
+                    <input id="f_search" placeholder="Nome do paciente ou responsável" />
+                </div>
+
+                <div>
+                    <label>Categoria</label>
+                    <select id="f_categoria">
+                        <option value="">Todas</option>
+                        <option value="mensalidade">Mensalidade</option>
+                        <option value="consulta">Consulta</option>
+                        <option value="servico">Serviço</option>
+                        <option value="convenio">Convênio</option>
+                        <option value="particular">Particular</option>
+                        <option value="funcionarios">Funcionários</option>
+                        <option value="luz">Luz</option>
+                        <option value="agua">Água</option>
+                        <option value="aluguel">Aluguel</option>
+                        <option value="internet">Internet</option>
+                        <option value="alimentacao">Alimentação</option>
+                        <option value="farmacia">Farmácia/Medicamentos</option>
+                        <option value="manutencao">Manutenção</option>
+                        <option value="impostos">Impostos/Taxas</option>
+                        <option value="outras_despesas">Outras despesas</option>
+                    </select>
+                </div>
+
+                <div class="filters-actions">
+                    <button class="btn btn-primary" id="btnFiltrar">Filtrar / Atualizar</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Filtro para relatório -->
         <div class="card">
             <div class="linha-form">
@@ -93,7 +190,85 @@
                 </div>
             </div>
 
-            <button onclick="adicionarFatura()">Adicionar Fatura</button>
+            <div class="linha-form">
+                <div>
+                    <label>Tipo</label>
+                    <select id="tipoLancamento">
+                        <option value="entrada">Entrada</option>
+                        <option value="saida">Saída</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Categoria</label>
+                    <select id="categoria">
+                        <optgroup label="Entradas">
+                            <option value="mensalidade">Mensalidade de residente</option>
+                            <option value="consulta">Consulta</option>
+                            <option value="servico">Serviço</option>
+                            <option value="convenio">Convênio</option>
+                            <option value="particular">Particular</option>
+                            <option value="outros_recebimentos">Outros recebimentos</option>
+                        </optgroup>
+                        <optgroup label="Saídas">
+                            <option value="funcionarios">Funcionários</option>
+                            <option value="contabilidade">Contabilidade</option>
+                            <option value="luz">Luz</option>
+                            <option value="agua">Água</option>
+                            <option value="aluguel">Aluguel</option>
+                            <option value="internet">Internet</option>
+                            <option value="alimentacao">Alimentação</option>
+                            <option value="farmacia">Farmácia/Medicamentos</option>
+                            <option value="manutencao">Manutenção</option>
+                            <option value="limpeza">Limpeza</option>
+                            <option value="impostos">Impostos/Taxas</option>
+                            <option value="outras_despesas">Outras despesas</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Data</label>
+                    <input type="date" id="dataLancamento">
+                </div>
+
+                <div>
+                    <label>Vencimento</label>
+                    <input type="date" id="dataVencimento">
+                </div>
+            </div>
+
+            <div class="linha-form">
+                <div>
+                    <label>Status</label>
+                    <select id="statusLancamento">
+                        <option value="pendente">Pendente</option>
+                        <option value="pago">Pago</option>
+                        <option value="vencido">Vencido</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Forma de pagamento</label>
+                    <select id="formaPagamento">
+                        <option value="">Não informado</option>
+                        <option value="dinheiro">Dinheiro</option>
+                        <option value="cartao">Cartão</option>
+                        <option value="pix">PIX</option>
+                        <option value="transferencia">Transferência</option>
+                    </select>
+                </div>
+
+                <div style="flex:1;">
+                    <label>Observações</label>
+                    <input type="text" id="observacoes" placeholder="Observações (opcional)">
+                </div>
+            </div>
+
+            <div style="text-align:center; margin-top:12px;">
+                <button onclick="adicionarFatura()">Adicionar Lançamento</button>
+            </div>
         </div>
 
         <div class="lista" id="listaFaturas">

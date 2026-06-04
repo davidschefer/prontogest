@@ -111,6 +111,12 @@
     return Number.isFinite(n) ? n : NaN;
   }
 
+  function formatarMoedaBR(v) {
+    const n = Number(v || 0);
+    if (!Number.isFinite(n)) return 'R$ 0,00';
+    return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
   function ordenarRecentesDesc(a, b) {
     const da = new Date(a?.dataHoraISO || a?.createdAt || 0).getTime();
     const db = new Date(b?.dataHoraISO || b?.createdAt || 0).getTime();
@@ -374,9 +380,33 @@
     div.innerHTML = "<h2>Faturas Registradas</h2>";
 
     const pid = getFiltroPacienteId();
-    const lista = (pid ? faturas.filter((f) => String(f?.pacienteId) === pid) : faturas).sort(
-      ordenarRecentesDesc
-    );
+
+    const periodo = document.getElementById('f_periodo')?.value || '';
+    const fstatus = document.getElementById('f_status')?.value || '';
+    const ftipo = document.getElementById('f_tipo')?.value || '';
+    const fsearch = (document.getElementById('f_search')?.value || '').trim().toLowerCase();
+    const fcategoria = document.getElementById('f_categoria')?.value || '';
+
+    const baseLista = pid ? faturas.filter((f) => String(f?.pacienteId) === pid) : faturas;
+
+    const now = Date.now();
+    let startTs = 0;
+    if (periodo === '7dias') startTs = now - 7 * 24 * 3600 * 1000;
+    else if (periodo === '30dias' || !periodo) startTs = now - 30 * 24 * 3600 * 1000;
+    else if (periodo === '1ano') startTs = now - 365 * 24 * 3600 * 1000;
+
+    const lista = baseLista.filter((f) => {
+      const ts = new Date(f?.dataHoraISO || f?.createdAt || f?.dataHora || 0).getTime();
+      if (startTs && ts < startTs) return false;
+      if (fstatus && String(f?.status || '').toLowerCase() !== String(fstatus).toLowerCase()) return false;
+      if (ftipo && String(f?.tipo || '').toLowerCase() !== String(ftipo).toLowerCase()) return false;
+      if (fcategoria && String(f?.categoria || '').toLowerCase() !== String(fcategoria).toLowerCase()) return false;
+      if (fsearch) {
+        const hay = `${String(f?.descricao || '')} ${String(f?.pacienteNome || '')} ${String(f?.convenio || '')}`.toLowerCase();
+        if (!hay.includes(fsearch)) return false;
+      }
+      return true;
+    }).sort(ordenarRecentesDesc);
 
     if (!lista.length) {
       div.innerHTML += "<p>Nenhuma fatura registrada.</p>";
@@ -386,31 +416,64 @@
           ? `Paciente: ${getPacienteNomeDoFiltro(pid)} - Total: R$ 0,00`
           : "Paciente: Todos - Total: R$ 0,00"
       );
+      // atualizar cards superiores
+      renderTopCards({ totalLancamentos: 0 });
+      renderResumoFinanceiro(null);
       return;
     }
 
+    // calcular métricas financeiras simples
     let total = 0;
+    let entradas = 0;
+    let saidas = 0;
+    let contasReceber = 0;
+    let contasPagas = 0;
+    let contasVencidas = 0;
 
     lista.forEach((f) => {
       const v = Number.isFinite(Number(f?.valor)) ? Number(f.valor) : parseValorBR(f?.valor);
-      total += Number.isFinite(v) ? v : 0;
+      const val = Number.isFinite(v) ? v : 0;
+      total += val;
+
+      // Tipo: se existir campo 'tipo' com 'entrada'/'saida'
+      const tipo = String(f?.tipo || "").toLowerCase();
+      if (tipo === "saida" || tipo === "despesa") {
+        saidas += val;
+      } else {
+        // padrão: tratar como entrada
+        entradas += val;
+      }
+
+      // status: 'pago','pendente','vencido'
+      const status = String(f?.status || "").toLowerCase();
+      if (status === "pago") contasPagas += 1;
+      if (status === "pendente") contasReceber += 1;
+      if (status === "vencido") contasVencidas += 1;
 
       const item = document.createElement("div");
       item.className = "item";
 
       const nome = f.pacienteNome || (f.pacienteId ? getPacienteNomeById(f.pacienteId) : "-");
 
+      const statusHtml = status ? `<span class="status-badge">${escapeHtml(status)}</span>` : "";
+
       item.innerHTML = `
-        <p><strong>Paciente:</strong> ${escapeHtml(nome)}</p>
-        <p><strong>Convênio:</strong> ${escapeHtml(f.convenio)}</p>
-        <p><strong>Valor:</strong> R$ ${(Number.isFinite(v) ? v : 0).toFixed(2)}</p>
-        <p><strong>Descrição:</strong> ${escapeHtml(f.descricao)}</p>
-        <p><strong>Faturado por:</strong> ${escapeHtml(f.usuario || "-")}</p>
-        <p><strong>Data/Hora:</strong> ${escapeHtml(f.dataHora || "-")}</p>
-        <div class="list-actions">
-          <button class="btn btn-sm btn-imprimir" type="button" onclick="imprimirFatura('${String(f.id)}')">Imprimir</button>
-          <button class="btn btn-primary btn-sm" type="button" onclick="editarFatura('${String(f.id)}')">Editar</button>
-          <button class="btn btn-danger btn-sm" type="button" onclick="removerFatura('${String(f.id)}')">Remover</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+          <div>
+            <p><strong>${escapeHtml(f.descricao || "-")}</strong></p>
+            <p><small>${escapeHtml(nome)} · ${escapeHtml(f.convenio || "-")}</small></p>
+            <p><small>${escapeHtml(f.dataHora || "-")}</small></p>
+          </div>
+          <div style="text-align:right; min-width:140px;">
+            <div>${formatarMoedaBR(val)}</div>
+            <div style="margin-top:6px;">${statusHtml}</div>
+            <div style="margin-top:8px;">
+              <button class="btn btn-sm btn-imprimir" type="button" onclick="imprimirFatura('${String(f.id)}')">Imprimir</button>
+              <button class="btn btn-primary btn-sm" type="button" onclick="editarFatura('${String(f.id)}')">Editar</button>
+              <button class="btn btn-danger btn-sm" type="button" onclick="removerFatura('${String(f.id)}')">Remover</button>
+              ${status !== 'pago' ? `<button class="btn btn-success btn-sm" type="button" onclick="marcarPago('${String(f.id)}')">Marcar como Pago</button>` : `<button class="btn btn-warning btn-sm" type="button" onclick="marcarPendente('${String(f.id)}')">Marcar Pendente</button>`}
+            </div>
+          </div>
         </div>
       `;
 
@@ -418,8 +481,37 @@
     });
 
     const labelTotal = pid ? "Total do Paciente" : "Total Geral";
-    if (totalEl) totalEl.textContent = `${labelTotal}: R$ ${total.toFixed(2)}`;
-    setResumo(`Paciente: ${getPacienteNomeDoFiltro(pid)} - ${labelTotal}: R$ ${total.toFixed(2)}`);
+    if (totalEl) totalEl.textContent = `${labelTotal}: ${formatarMoedaBR(total)}`;
+    setResumo(`Paciente: ${getPacienteNomeDoFiltro(pid)} - ${labelTotal}: ${formatarMoedaBR(total)}`);
+
+    // renderizar cards superiores e resumo
+    renderTopCards({ entradas, saidas, saldo: entradas - saidas, contasReceber, contasPagas, contasVencidas, totalLancamentos: lista.length });
+    renderResumoFinanceiro({ totalRecebido: entradas, totalPendente: contasReceber, totalVencido: contasVencidas, saldoEstimado: entradas - saidas, lancamentos: lista.length });
+  }
+
+  /* ---------------------------
+     Render helpers (cards e resumo)
+  --------------------------- */
+  function renderTopCards(metrics) {
+    if (!metrics) metrics = {};
+    const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = (typeof v === 'number' && id.toLowerCase().includes('r$')) ? formatarMoedaBR(v) : (id.toLowerCase().includes('r$') ? v : (typeof v === 'number' ? v : v || 0)); };
+    const elEntr = document.getElementById('entradasMes'); if (elEntr) elEntr.textContent = formatarMoedaBR(metrics.entradas || 0);
+    const elSaidas = document.getElementById('saidasMes'); if (elSaidas) elSaidas.textContent = formatarMoedaBR(metrics.saidas || 0);
+    const elSaldo = document.getElementById('saldoMes'); if (elSaldo) elSaldo.textContent = formatarMoedaBR(metrics.saldo || 0);
+    const elCR = document.getElementById('contasReceber'); if (elCR) elCR.textContent = metrics.contasReceber != null ? metrics.contasReceber : 0;
+    const elCP = document.getElementById('contasPagas'); if (elCP) elCP.textContent = metrics.contasPagas != null ? metrics.contasPagas : 0;
+    const elCV = document.getElementById('contasVencidas'); if (elCV) elCV.textContent = metrics.contasVencidas != null ? metrics.contasVencidas : 0;
+    const elTL = document.getElementById('totalLancamentos'); if (elTL) elTL.textContent = metrics.totalLancamentos != null ? metrics.totalLancamentos : 0;
+  }
+
+  function renderResumoFinanceiro(data) {
+    const el = document.getElementById('resumoFinanceiro');
+    if (!el) return;
+    if (!data) {
+      el.textContent = '';
+      return;
+    }
+    el.innerHTML = `Recebido: ${formatarMoedaBR(data.totalRecebido || 0)} · Pendente: ${data.totalPendente || 0} · Vencido: ${data.totalVencido || 0} · Saldo: ${formatarMoedaBR(data.saldoEstimado || 0)} · Lançamentos: ${data.lancamentos || 0}`;
   }
 
   /* ---------------------------
@@ -462,16 +554,35 @@
     const valorEl = document.getElementById("valor");
     const descEl = document.getElementById("descricao");
 
+    const tipoEl = document.getElementById("tipoLancamento");
+    const categoriaEl = document.getElementById("categoria");
+    const dataEl = document.getElementById("dataLancamento");
+    const vencEl = document.getElementById("dataVencimento");
+    const statusEl = document.getElementById("statusLancamento");
+    const obsEl = document.getElementById("observacoes");
+    const formaEl = document.getElementById("formaPagamento");
+
     const { pacienteId, pacienteNome } = lerPacienteCadastro();
     const convenio = String(convenioEl?.value || "").trim();
     const valorRaw = String(valorEl?.value || "").trim();
     const valor = parseValorBR(valorRaw);
     const descricao = String(descEl?.value || "").trim();
+    const tipo = String(tipoEl?.value || "entrada").trim().toLowerCase();
+    const categoria = String(categoriaEl?.value || "").trim();
+    const dataVal = dataEl?.value ? String(dataEl.value) : "";
+    const vencVal = vencEl?.value ? String(vencEl.value) : "";
+    const status = String(statusEl?.value || "pendente").trim().toLowerCase();
+    const observacoes = String(obsEl?.value || "").trim();
+    const formaPagamento = String(formaEl?.value || "").trim();
 
-    if (!pacienteNome || !convenio || !Number.isFinite(valor) || valor <= 0 || !descricao) {
-      alert("Preencha todos os campos corretamente.");
+    if (!convenio || !Number.isFinite(valor) || valor <= 0 || !descricao || !tipo || !categoria) {
+      alert("Preencha os campos obrigatórios: tipo, categoria, convênio, valor e descrição.");
       return;
     }
+
+    const dataHoraISO = dataVal ? new Date(dataVal).toISOString() : nowISO();
+    const dataHoraBR = dataVal ? new Date(dataVal).toLocaleDateString("pt-BR") : nowBR();
+    const dataVencISO = vencVal ? new Date(vencVal).toISOString() : "";
 
     if (editingId) {
       const payloadEdicao = {
@@ -481,9 +592,16 @@
         convenio,
         valor,
         descricao,
+        tipo,
+        categoria,
+        dataHora: dataHoraBR,
+        dataHoraISO,
+        vencimentoISO: dataVencISO,
+        status,
+        observacoes,
+        formaPagamento,
         usuario: getUsuarioLogado(),
-        dataHora: nowBR(),
-        dataHoraISO: nowISO()
+        updatedAt: new Date().toISOString()
       };
 
       if (typeof window.apiFetch === "function") {
@@ -529,9 +647,16 @@
       convenio,
       valor,
       descricao,
+      tipo,
+      categoria,
+      dataHora: dataHoraBR,
+      dataHoraISO,
+      vencimentoISO: dataVencISO,
+      status,
+      observacoes,
+      formaPagamento,
       usuario: getUsuarioLogado(),
-      dataHora: nowBR(),
-      dataHoraISO: nowISO()
+      createdAt: new Date().toISOString()
     };
 
     if (typeof window.apiFetch === "function") {
@@ -612,6 +737,13 @@
     const convenioEl = document.getElementById("convenio");
     const valorEl = document.getElementById("valor");
     const descEl = document.getElementById("descricao");
+    const tipoEl = document.getElementById("tipoLancamento");
+    const categoriaEl = document.getElementById("categoria");
+    const dataEl = document.getElementById("dataLancamento");
+    const vencEl = document.getElementById("dataVencimento");
+    const statusEl = document.getElementById("statusLancamento");
+    const obsEl = document.getElementById("observacoes");
+    const formaEl = document.getElementById("formaPagamento");
 
     if (pacienteEl) {
       const tag = String(pacienteEl.tagName || "").toUpperCase();
@@ -622,6 +754,13 @@
     if (convenioEl) convenioEl.value = f.convenio || "";
     if (valorEl) valorEl.value = String(f.valor ?? "");
     if (descEl) descEl.value = f.descricao || "";
+    if (tipoEl) tipoEl.value = f.tipo || (f.tipo === undefined ? "entrada" : f.tipo);
+    if (categoriaEl) categoriaEl.value = f.categoria || "";
+    if (dataEl) dataEl.value = f.dataHoraISO ? (new Date(f.dataHoraISO)).toISOString().slice(0,10) : "";
+    if (vencEl) vencEl.value = f.vencimentoISO ? (new Date(f.vencimentoISO)).toISOString().slice(0,10) : "";
+    if (statusEl) statusEl.value = f.status || "pendente";
+    if (obsEl) obsEl.value = f.observacoes || "";
+    if (formaEl) formaEl.value = f.formaPagamento || "";
 
     setModoEdicao(true);
   }
@@ -665,6 +804,22 @@
     if (convenioEl) convenioEl.value = "";
     if (valorEl) valorEl.value = "";
     if (descEl) descEl.value = "";
+
+    const tipoEl = document.getElementById("tipoLancamento");
+    const categoriaEl = document.getElementById("categoria");
+    const dataEl = document.getElementById("dataLancamento");
+    const vencEl = document.getElementById("dataVencimento");
+    const statusEl = document.getElementById("statusLancamento");
+    const obsEl = document.getElementById("observacoes");
+    const formaEl = document.getElementById("formaPagamento");
+
+    if (tipoEl) tipoEl.value = "entrada";
+    if (categoriaEl) categoriaEl.value = "";
+    if (dataEl) dataEl.value = "";
+    if (vencEl) vencEl.value = "";
+    if (statusEl) statusEl.value = "pendente";
+    if (obsEl) obsEl.value = "";
+    if (formaEl) formaEl.value = "";
 
     editingId = null;
     setModoEdicao(false);
@@ -711,6 +866,9 @@
     const selFiltro = document.getElementById("pacienteFiltro");
     if (selFiltro) selFiltro.addEventListener("change", onFiltroChange);
 
+    const btnFiltrar = document.getElementById('btnFiltrar');
+    if (btnFiltrar) btnFiltrar.addEventListener('click', () => atualizarLista());
+
     if (typeof window.apiFetch === "function") {
       await syncFaturasFromAPI("");
     } else {
@@ -732,4 +890,30 @@
   window.editarFatura = editarFatura;
   window.imprimirFatura = imprimirFatura;
   window.limparFiltroPaciente = limparFiltroPaciente;
+  window.marcarPago = async function (id) {
+    await updateStatus(id, 'pago');
+  };
+  window.marcarPendente = async function (id) {
+    await updateStatus(id, 'pendente');
+  };
+
+  async function updateStatus(id, status) {
+    const fid = String(id || '');
+    const idx = faturas.findIndex((x) => String(x?.id) === fid);
+    if (idx === -1) return;
+
+    faturas[idx].status = status;
+    if (typeof window.apiFetch === 'function') {
+      try {
+        await apiUpdateFatura(fid, { ...faturas[idx] });
+      } catch (e) {
+        console.warn('Faturamento: falha ao atualizar status na API, fallback:', e?.message || e);
+      }
+    }
+
+    const cache = carregarFaturasLS();
+    const novo = upsertCacheUnico(cache, faturas[idx]).sort(ordenarRecentesDesc);
+    salvarFaturasLS(novo);
+    atualizarLista();
+  }
 })();
