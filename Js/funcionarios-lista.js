@@ -12,6 +12,21 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const KEY_FUNCIONARIOS = "funcionarios";
 
+  function garantirCssFuncionarios() {
+    const href = "../Css/funcionarios-cadastro.css";
+    const jaCarregado = Array.from(document.styleSheets || []).some((sheet) =>
+      String(sheet.href || "").endsWith("/Css/funcionarios-cadastro.css")
+    );
+    if (jaCarregado) return;
+
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href;
+    document.head.appendChild(link);
+  }
+
+  garantirCssFuncionarios();
+
   function escapeHtml(str) {
     return String(str ?? "")
       .replaceAll("&", "&amp;")

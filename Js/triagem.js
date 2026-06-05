@@ -905,10 +905,10 @@
           <div class="triagem-meta">
             <div class="triagem-data">${escapeHtml(t.dataHoraBR || "-")}</div>
             <div class="triagem-paciente">${escapeHtml(t.pacienteNome || "-")}</div>
+            ${profTxt ? `<div class="triagem-profissional">${escapeHtml(profTxt)}</div>` : ""}
           </div>
           <div class="triagem-header-right">
             ${risco ? `<span class="pill-risco triagem-risco risco-${escapeHtml(riscoClass)}">${escapeHtml(risco)}</span>` : ""}
-            ${profTxt ? `<div class="triagem-profissional">${escapeHtml(profTxt)}</div>` : ""}
           </div>
         </div>
       `;

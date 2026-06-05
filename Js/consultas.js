@@ -449,6 +449,8 @@
       const nome = c.pacienteNome || getPacienteNomeById(c.pacienteId) || "-";
       const dataBR = c.dataBR || formatarDataBR(c.data);
       const tipo = String(c.tipo || "");
+      const status = String(c.status || "").trim();
+      const observacao = String(c.observacao || c.observacoes || c.obs || "").trim();
 
       item.innerHTML = `
         <div class="consult-card-header">
@@ -462,7 +464,13 @@
         </div>
 
         <div class="consult-card-body">
-          <div class="consult-info"><strong>Tipo:</strong> ${escapeHtml(tipo || "-")}</div>
+          <div class="consult-info">${escapeHtml(observacao || tipo || "Consulta agendada")}</div>
+          <div class="consult-chips">
+            ${dataBR ? `<span class="consult-chip">Data: ${escapeHtml(dataBR)}</span>` : ""}
+            ${c.hora ? `<span class="consult-chip">Hora: ${escapeHtml(c.hora)}</span>` : ""}
+            ${tipo ? `<span class="consult-chip">Tipo: ${escapeHtml(tipo)}</span>` : ""}
+            ${status ? `<span class="consult-chip">Status: ${escapeHtml(status)}</span>` : ""}
+          </div>
         </div>
 
         <div class="consult-card-footer list-actions">
