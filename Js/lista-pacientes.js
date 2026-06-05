@@ -112,30 +112,46 @@
 
     lista.forEach((p, i) => {
       const item = document.createElement("div");
-      item.className = "item";
+      item.className = "item patient-card";
 
       const endereco = p.endereco || {};
 
+      // foto: pode ser p.fotoDataUrl, p.foto ou vazio
+      const fotoUrl = p.fotoDataUrl || p.foto || "";
+
+      // documentos: checar se existe documentosPaciente (array) ou documentos
+      const docs = Array.isArray(p.documentosPaciente || p.documentos) ? (p.documentosPaciente || p.documentos) : [];
+
+      // nascimento ou idade
+      const nascimento = p.nascimento || "";
+
       item.innerHTML = `
-        <div class="linha">
-          <div><strong>Nome:</strong> ${escapeHtml(p.nome || "-")}</div>
-          <div><strong>Nascimento:</strong> ${escapeHtml(p.nascimento || "-")}</div>
+        <div class="patient-left">
+          <div class="patient-photo">${fotoUrl ? `<img src="${escapeHtml(fotoUrl)}" alt="Foto de ${escapeHtml(p.nome || '')}">` : '<div class="photo-placeholder">&#128100;</div>'}</div>
         </div>
 
-        <div class="linha">
-          <div><strong>Telefone:</strong> ${escapeHtml(p.telefone || "-")}</div>
-          <div><strong>CPF:</strong> ${escapeHtml(p.cpf || "-")}</div>
-        </div>
+        <div class="patient-body">
+          <div class="patient-row">
+            <div class="patient-name">${escapeHtml(p.nome || "-")}</div>
+            <div class="patient-badges">
+              <span class="badge ${fotoUrl ? 'has-photo' : 'no-photo'}">${fotoUrl ? 'Com foto' : 'Sem foto'}</span>
+              <span class="badge ${docs.length? 'docs-ok' : 'docs-missing'}">${docs.length? 'Documentos anexados' : 'Documentos pendentes'}</span>
+            </div>
+          </div>
 
-        <div class="linha">
-          <div><strong>Convênio:</strong> ${escapeHtml(p.convenio || "-")}</div>
-          <div><strong>Cidade:</strong> ${escapeHtml(endereco.cidade || "-")}</div>
-        </div>
+          <div class="patient-meta">
+            <div><strong>CPF:</strong> ${escapeHtml(p.cpf || "-")}</div>
+            <div><strong>Nascimento:</strong> ${escapeHtml(nascimento || '-')}</div>
+            <div><strong>Telefone:</strong> ${escapeHtml(p.telefone || "-")}</div>
+            <div><strong>Responsável:</strong> ${escapeHtml(p.responsavel || p.responsavel_nome || "-")}</div>
+            <div><strong>Convênio:</strong> ${escapeHtml(p.convenio || "-")}</div>
+          </div>
 
-        <div class="list-actions">
-          <button class="btn btn-sm btn-imprimir" type="button" data-index="${i}">Imprimir</button>
-          <button class="btn btn-primary btn-sm" type="button" data-index="${i}">Editar</button>
-          <button class="btn btn-danger btn-sm" type="button" data-index="${i}">Remover</button>
+          <div class="list-actions">
+            <button class="btn btn-sm btn-imprimir" type="button" data-index="${i}">Imprimir</button>
+            <button class="btn btn-primary btn-sm" type="button" data-index="${i}">Editar</button>
+            <button class="btn btn-danger btn-sm" type="button" data-index="${i}">Remover</button>
+          </div>
         </div>
       `;
 

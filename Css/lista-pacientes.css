@@ -32,6 +32,78 @@ h1 {
     margin-bottom: 20px;
     box-shadow: 0 3px 15px rgba(0, 0, 0, 0.07);
 }
+
+/* Patient card layout */
+.patient-card {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 14px;
+}
+
+.patient-left {
+    width: 72px;
+    flex-shrink: 0;
+}
+
+.patient-photo img {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
+}
+
+.photo-placeholder {
+    width: 72px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef2f7;
+    color: #5b6b7a;
+    border-radius: 8px;
+    font-size: 28px;
+}
+
+.patient-body {
+    flex: 1;
+}
+
+.patient-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.patient-name {
+    font-weight: 700;
+    font-size: 18px;
+    color: #07203a;
+}
+
+.patient-badges { display: flex; gap: 8px; }
+.badge {
+    background: #f1f5f9;
+    color: #123;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+}
+.badge.has-photo { background: #e6ffef; color: #0a7a3b; }
+.badge.no-photo { background: #fff5e6; color: #b36b00; }
+.badge.docs-ok { background: #e6f0ff; color: #0a4ea6; }
+.badge.docs-missing { background: #fff1f2; color: #a60a2a; }
+
+.patient-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 20px;
+    color: #264055;
+    font-size: 14px;
+    margin-bottom: 12px;
+}
 .linha {
     display: flex;
     justify-content: space-between;
