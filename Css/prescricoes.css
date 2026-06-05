@@ -84,10 +84,12 @@ button:disabled {
 
 /* Prescrições: card layout */
 .prescription-card {
-        display: flex;
-        gap: 16px;
-        align-items: flex-start;
-        padding: 12px;
+        display: block;
+        padding: 14px 16px;
+        border: 1px solid #dbe7f3;
+        border-radius: 10px;
+        box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+        text-align: left;
 }
 
 .presc-left {
@@ -103,18 +105,21 @@ button:disabled {
 .presc-title {
         display: flex;
         flex-direction: column;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eef3f8;
 }
 
 .presc-paciente {
         font-weight: 800;
-        font-size: 16px;
+        font-size: 15px;
         color: #07203a;
 }
 
 .presc-medicamento {
         font-weight: 700;
-        font-size: 15px;
-        color: #0a4ea6;
+        font-size: 12px;
+        color: #526173;
+        margin-top: 3px;
 }
 
 .presc-chips {
@@ -125,10 +130,12 @@ button:disabled {
 }
 
 .chip {
-        background: #f1f5f9;
-        padding: 6px 8px;
+        background: #f7fbff;
+        border: 1px solid #dbe7f3;
+        padding: 5px 8px;
         border-radius: 999px;
-        font-size: 12px;
+        font-size: 11px;
+        font-weight: 700;
         color: #123;
 }
 
@@ -142,17 +149,19 @@ button:disabled {
 
 .presc-actions {
         display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+        flex-direction: row;
+        justify-content: flex-end;
         align-items: flex-end;
-        gap: 8px;
-        min-width: 160px;
+        gap: 6px;
+        min-width: 0;
+        margin-top: 12px;
+        flex-wrap: wrap;
 }
 
 .status-badge {
-        padding: 6px 10px;
-        border-radius: 12px;
-        font-size: 12px;
+        padding: 5px 8px;
+        border-radius: 999px;
+        font-size: 11px;
         font-weight: 700;
         color: #fff;
 }
@@ -162,8 +171,8 @@ button:disabled {
 .status-badge.pendente { background: #b91c1c; }
 .status-badge.sem { background: #94a3b8; }
 
-.list-actions { display:flex; gap:8px; margin-top:6px; }
-.list-actions button, .list-actions .btn { width:auto; padding:6px 8px; font-size:12px; border-radius:8px; }
+.list-actions { display:flex; gap:6px; margin-top:0; justify-content:flex-end; flex-wrap:wrap; }
+.list-actions button, .list-actions .btn { width:auto; min-width:0; padding:6px 9px; margin:0; display:inline-flex; font-size:11px; font-weight:800; border-radius:8px; line-height:1.2; }
 .livre {
         background: #81c995;
         color: white;
@@ -203,18 +212,9 @@ button:disabled {
 
 /* Responsividade: em telas pequenas empilha conteúdo e ações */
 @media (max-width: 720px) {
-        .prescription-card {
-                flex-direction: column;
-                align-items: stretch;
-        }
-
         .presc-actions {
-                flex-direction: row;
                 align-items: center;
                 justify-content: flex-start;
-                gap: 8px;
-                min-width: auto;
-                margin-top: 10px;
         }
 
         .presc-meta {

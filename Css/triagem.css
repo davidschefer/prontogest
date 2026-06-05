@@ -238,11 +238,11 @@ margin-top:30px;
   color:#fff;
   cursor:pointer;
 }
-.btn-action.ver{ background:#0A66C2; }
-.btn-action.editar{ background:#4b5563; }
+.btn-action.ver{ background:#25b43d; }
+.btn-action.editar{ background:#0A66C2; }
 .btn-action.remover{ background:#cc0000; }
-.btn-action.ver:hover{ background:#084d94; }
-.btn-action.editar:hover{ background:#374151; }
+.btn-action.ver:hover{ background:#16842a; }
+.btn-action.editar:hover{ background:#084d94; }
 .btn-action.remover:hover{ background:#a80000; }
 .pill-risco{
   display:inline-block;
@@ -265,34 +265,46 @@ margin-top:30px;
 }
 .triagem-card{
   background: #ffffff;
-  border: 1px solid #e6edf6;
-  border-radius: 14px;
-  padding: 14px;
+  border: 1px solid #dbe7f3;
+  border-left: 1px solid #dbe7f3;
+  border-radius: 10px;
+  padding: 14px 16px;
   margin-bottom: 14px;
-  display: grid;
-  grid-template-columns: 1fr 160px;
-  gap: 12px;
-  align-items: start;
+  display: block;
+  box-shadow: 0 3px 12px rgba(15,23,42,0.04);
+}
+.timeline .item.triagem-card{
+  display:block;
+  border:1px solid #dbe7f3;
+  border-radius:10px;
+  padding:14px 16px;
+}
+.timeline .item.triagem-card::before{
+  left:-24px;
+  width:10px;
+  height:10px;
+  background:#c8d7e8;
 }
 .triagem-card-header{
-  grid-column: 1 / -1;
   display:flex;
   justify-content:space-between;
   gap:12px;
   align-items:flex-start;
-  margin-bottom:8px;
+  margin-bottom:10px;
+  padding-bottom:10px;
+  border-bottom:1px solid #eef3f8;
 }
 .triagem-meta{
   display:flex;
   flex-direction:column;
 }
 .triagem-data{
-  font-weight:700;
-  color:#0a1a33;
-  font-size:14px;
+  font-weight:600;
+  color:#526173;
+  font-size:12px;
 }
 .triagem-paciente{
-  font-size:16px;
+  font-size:15px;
   font-weight:700;
   color:#0a2540;
 }
@@ -308,7 +320,6 @@ margin-top:30px;
   opacity:0.9;
 }
 .triagem-card-body{
-  grid-column: 1 / -1;
   display:flex;
   flex-direction:column;
   gap:8px;
@@ -318,19 +329,19 @@ margin-top:30px;
 .triagem-chips{ display:flex; gap:8px; flex-wrap:wrap; }
 .triagem-chip{
   display:inline-block;
-  padding:6px 8px;
-  background:#f1f5f9;
-  border:1px solid #e6edf6;
+  padding:5px 8px;
+  background:#f7fbff;
+  border:1px solid #dbe7f3;
   border-radius:999px;
-  font-size:12px;
+  font-size:11px;
+  font-weight:700;
   color:#0a2540;
 }
-.triagem-card-footer{ display:flex; flex-direction:column; gap:8px; align-items:flex-end; justify-content:flex-start; }
-.triagem-card .triagem-actions{ margin:0; grid-column:auto; grid-row:auto; align-self:flex-start; }
+.triagem-card-footer{ display:flex; gap:6px; align-items:center; justify-content:flex-end; margin-top:14px; flex-wrap:wrap; }
+.triagem-card .triagem-actions{ margin:0; grid-column:auto; grid-row:auto; align-self:center; min-width:0; white-space:normal; }
 
 /* Small screens: stack into single column */
 @media (max-width: 720px) {
-  .triagem-card{ grid-template-columns: 1fr; }
   .triagem-card-header{ align-items:flex-start; }
   .triagem-header-right{ align-items:flex-start; }
   .triagem-card-footer{ align-items:flex-start; }

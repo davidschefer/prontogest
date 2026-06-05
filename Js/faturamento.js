@@ -454,19 +454,31 @@
       item.className = "item fatura-card";
 
       const nome = f.pacienteNome || (f.pacienteId ? getPacienteNomeById(f.pacienteId) : "-");
-      const statusHtml = status ? `<span class="status-badge">${escapeHtml(status)}</span>` : "";
+      const statusClass = String(status || "").toLowerCase().replace(/[^a-z0-9]+/g, "-") || "sem";
+      const statusHtml = status ? `<span class="status-badge status-${escapeHtml(statusClass)}">${escapeHtml(status)}</span>` : "";
       const tipoLabel = String(f.tipo || "entrada");
+      const tipoClass = String(tipoLabel || "").toLowerCase().replace(/[^a-z0-9]+/g, "-") || "entrada";
+      const vencimento = f.vencimentoISO ? new Date(f.vencimentoISO).toLocaleDateString("pt-BR") : "";
 
       item.innerHTML = `
         <div class="fatura-card-header">
           <div class="fatura-meta">
-            <div class="fatura-desc"><strong>${escapeHtml(f.descricao || "-")}</strong></div>
-            <div class="fatura-sub"><small>${escapeHtml(nome)} · ${escapeHtml(f.convenio || "-")}</small></div>
-            <div class="fatura-date"><small>${escapeHtml(f.dataHora || "-")}</small></div>
+            <div class="fatura-desc">${escapeHtml(f.descricao || f.categoria || "-")}</div>
+            <div class="fatura-sub">${escapeHtml(nome)}${f.convenio ? ` - ${escapeHtml(f.convenio)}` : ""}</div>
           </div>
           <div class="fatura-right">
             <div class="fatura-valor">${formatarMoedaBR(val)}</div>
-            <div class="fatura-status">${statusHtml}</div>
+            <span class="tipo-badge tipo-${escapeHtml(tipoClass)}">${escapeHtml(tipoLabel)}</span>
+          </div>
+        </div>
+
+        <div class="fatura-card-body">
+          <div class="fatura-chips">
+            ${f.categoria ? `<span class="fatura-chip">Categoria: ${escapeHtml(f.categoria)}</span>` : ""}
+            ${statusHtml}
+            ${f.dataHora ? `<span class="fatura-chip">Data: ${escapeHtml(f.dataHora)}</span>` : ""}
+            ${vencimento ? `<span class="fatura-chip">Venc.: ${escapeHtml(vencimento)}</span>` : ""}
+            ${f.formaPagamento ? `<span class="fatura-chip">Forma: ${escapeHtml(f.formaPagamento)}</span>` : ""}
           </div>
         </div>
 

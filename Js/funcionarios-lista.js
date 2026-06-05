@@ -57,32 +57,38 @@ document.addEventListener("DOMContentLoaded", async () => {
     lista.forEach((f) => {
       const item = document.createElement("div");
       item.className = "item funcionario-card";
+      const id = escapeHtml(f.id || f.email || f.nome || "");
+      const assinaturaOk = Boolean(f.assinaturaDataUrl);
 
       const imgHtml = f.assinaturaDataUrl
-        ? `<img src="${f.assinaturaDataUrl}" alt="Assinatura ${escapeHtml(f.nome)}" style="height:40px; max-width:180px; object-fit:contain;">`
-        : `<span style="opacity:.7">Sem imagem</span>`;
+        ? `<img src="${escapeHtml(f.assinaturaDataUrl)}" alt="Assinatura ${escapeHtml(f.nome)}">`
+        : `<span>Sem imagem</span>`;
 
       item.innerHTML = `
         <div class="func-header">
           <div class="func-main">
-            <div class="func-nome">${escapeHtml(f.nome)}</div>
-            <div class="func-role">${escapeHtml(f.role || "-")}</div>
+            <div class="func-nome">${escapeHtml(f.nome || "-")}</div>
+            <div class="func-email">${escapeHtml(f.email || "-")}</div>
           </div>
-          <div class="func-meta">
-            <div class="func-orgao">${escapeHtml(f.orgao || "-")}</div>
-            <div class="func-registro">${escapeHtml(f.registro || "-")}</div>
+          <div class="func-badges">
+            <span class="func-badge">${escapeHtml(f.role || "perfil")}</span>
+            <span class="func-badge ${assinaturaOk ? "ok" : "muted"}">${assinaturaOk ? "Com assinatura" : "Sem assinatura"}</span>
           </div>
         </div>
 
         <div class="func-body">
-          <div class="func-email">${escapeHtml(f.email || "-")}</div>
+          <div class="func-chips">
+            ${f.orgao ? `<span class="func-chip">Orgao: ${escapeHtml(f.orgao)}</span>` : ""}
+            ${f.registro ? `<span class="func-chip">Registro: ${escapeHtml(f.registro)}</span>` : ""}
+            ${f.role ? `<span class="func-chip">Perfil: ${escapeHtml(f.role)}</span>` : ""}
+          </div>
           <div class="func-assinatura">${imgHtml}</div>
         </div>
 
         <div class="func-footer list-actions">
-          <button type="button" class="btn btn-sm btn-imprimir">Imprimir</button>
-          <button type="button" class="btn btn-primary btn-sm">Editar</button>
-          <button type="button" class="btn btn-danger btn-sm">Remover</button>
+          <button type="button" class="btn btn-sm btn-imprimir" data-id="${id}">Imprimir</button>
+          <button type="button" class="btn btn-primary btn-sm" data-id="${id}">Editar</button>
+          <button type="button" class="btn btn-danger btn-sm" data-id="${id}">Remover</button>
         </div>
       `;
 

@@ -374,43 +374,45 @@
 
     lista.forEach((p, i) => {
       const item = document.createElement("div");
-      item.className = "item";
+      item.className = "item cadastro-paciente-card";
 
       const endereco = p.endereco || {};
+      const docs = Array.isArray(p.documentosPaciente) ? p.documentosPaciente : [];
+      const temFoto = Boolean(p.fotoDataUrl);
+      const enderecoTxt = [
+        endereco.rua,
+        endereco.numero,
+        endereco.complemento,
+        endereco.cidade,
+        endereco.estado,
+        endereco.cep,
+      ]
+        .map((v) => String(v || "").trim())
+        .filter(Boolean)
+        .join(", ");
 
       item.innerHTML = `
-        <div class="linha">
-          <div><strong>Nome:</strong> ${escapeHtml(p.nome || "")}</div>
-          <div><strong>Nascimento:</strong> ${escapeHtml(p.nascimento || "")}</div>
+        <div class="cadastro-card-header">
+          <div>
+            <div class="cadastro-card-title">${escapeHtml(p.nome || "-")}</div>
+            <div class="cadastro-card-meta">${escapeHtml(p.cpf || "CPF nao informado")}</div>
+          </div>
+          <div class="cadastro-card-badges">
+            <span class="cadastro-badge ${temFoto ? "ok" : "muted"}">${temFoto ? "Com foto" : "Sem foto"}</span>
+            <span class="cadastro-badge ${docs.length ? "ok" : "muted"}">${docs.length ? `${docs.length} doc.` : "Sem docs"}</span>
+          </div>
         </div>
 
-        <div class="linha">
-          <div><strong>Telefone:</strong> ${escapeHtml(p.telefone || "")}</div>
-          <div><strong>Telefone do Familiar:</strong> ${escapeHtml(p.telefoneFamiliar || "")}</div>
-        </div>
-
-        <div class="linha">
-          <div><strong>Familiar/Responsável:</strong> ${escapeHtml(p.familiarResponsavel || "")}</div>
-        </div>
-
-        <div class="linha">
-          <div><strong>CPF:</strong> ${escapeHtml(p.cpf || "")}</div>
-          <div><strong>Convênio:</strong> ${escapeHtml(p.convenio || "")}</div>
-        </div>
-
-        ${
-          p.convenio === "Plano de Saúde"
-            ? `<div><strong>Plano:</strong> ${escapeHtml(p.planoSaude || "")}</div>`
-            : ""
-        }
-
-        <div>
-          <strong>Endereço:</strong>
-          ${escapeHtml(endereco.rua || "")}, ${escapeHtml(endereco.numero || "")}${
-        endereco.complemento ? `, ${escapeHtml(endereco.complemento)}` : ""
-      }, ${escapeHtml(endereco.cidade || "")} - ${escapeHtml(
-        endereco.estado || ""
-      )}, ${escapeHtml(endereco.cep || "")}
+        <div class="cadastro-card-body">
+          <div class="cadastro-card-line">${escapeHtml(enderecoTxt || "Endereco nao informado")}</div>
+          <div class="cadastro-chip-row">
+            ${p.nascimento ? `<span class="cadastro-chip">Nascimento: ${escapeHtml(p.nascimento)}</span>` : ""}
+            ${p.telefone ? `<span class="cadastro-chip">Telefone: ${escapeHtml(p.telefone)}</span>` : ""}
+            ${p.telefoneFamiliar ? `<span class="cadastro-chip">Familiar: ${escapeHtml(p.telefoneFamiliar)}</span>` : ""}
+            ${p.familiarResponsavel ? `<span class="cadastro-chip">Responsavel: ${escapeHtml(p.familiarResponsavel)}</span>` : ""}
+            ${p.convenio ? `<span class="cadastro-chip">Convenio: ${escapeHtml(p.convenio)}</span>` : ""}
+            ${p.convenio === "Plano de Saúde" && p.planoSaude ? `<span class="cadastro-chip">Plano: ${escapeHtml(p.planoSaude)}</span>` : ""}
+          </div>
         </div>
 
         <div class="list-actions">

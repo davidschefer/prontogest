@@ -214,3 +214,139 @@
     .card{ padding:18px; width: 94%; }
     .foto-paciente-preview{ width:120px; height:120px; }
 }
+
+.timeline {
+    border-left: 2px solid #e5edf6;
+    padding-left: 16px;
+}
+
+.cadastro-paciente-card {
+    position: relative;
+    padding: 14px 16px;
+    border: 1px solid #dbe7f3;
+    border-radius: 10px;
+    box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+    text-align: left;
+}
+
+.cadastro-paciente-card::before {
+    content: "";
+    position: absolute;
+    left: -23px;
+    top: 18px;
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: #0A66C2;
+}
+
+.cadastro-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eef3f8;
+}
+
+.cadastro-card-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #061a33;
+}
+
+.cadastro-card-meta,
+.cadastro-card-line {
+    margin-top: 3px;
+    font-size: 12px;
+    color: #526173;
+}
+
+.cadastro-card-badges,
+.cadastro-chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.cadastro-card-badges {
+    justify-content: flex-end;
+}
+
+.cadastro-card-body {
+    padding-top: 12px;
+}
+
+.cadastro-chip-row {
+    margin-top: 10px;
+}
+
+.cadastro-badge,
+.cadastro-chip {
+    display: inline-flex;
+    align-items: center;
+    width: auto;
+    padding: 5px 8px;
+    border: 1px solid #dbe7f3;
+    border-radius: 999px;
+    background: #f7fbff;
+    color: #0a2540;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.cadastro-badge.ok {
+    background: #edf8f1;
+    border-color: #cfead8;
+    color: #17643a;
+}
+
+.cadastro-badge.muted {
+    background: #f8fafc;
+    color: #617184;
+}
+
+.list-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+}
+
+.list-actions button,
+.list-actions .btn,
+.documentos-paciente-lista .doc-item button {
+    width: auto;
+    min-width: 0;
+    padding: 6px 9px;
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.btn-imprimir {
+    background: #25b43d;
+}
+
+.btn-imprimir:hover {
+    background: #16842a;
+}
+
+@media (max-width: 720px) {
+    .cadastro-card-header,
+    .cadastro-card-badges {
+        align-items: flex-start;
+        justify-content: flex-start;
+    }
+
+    .cadastro-card-header {
+        flex-direction: column;
+    }
+}
