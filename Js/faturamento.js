@@ -474,11 +474,11 @@
 
         <div class="fatura-card-body">
           <div class="fatura-chips">
-            ${f.categoria ? `<span class="fatura-chip">Categoria: ${escapeHtml(f.categoria)}</span>` : ""}
-            ${statusHtml}
-            ${f.dataHora ? `<span class="fatura-chip">Data: ${escapeHtml(f.dataHora)}</span>` : ""}
-            ${vencimento ? `<span class="fatura-chip">Venc.: ${escapeHtml(vencimento)}</span>` : ""}
-            ${f.formaPagamento ? `<span class="fatura-chip">Forma: ${escapeHtml(f.formaPagamento)}</span>` : ""}
+            ${f.categoria ? `<span class="fatura-chip-meta"><span class="chip-label">Categoria:</span><span class="fatura-chip">${escapeHtml(f.categoria)}</span></span>` : ""}
+            ${status ? `<span class="fatura-chip-meta"><span class="chip-label">Status:</span>${statusHtml}</span>` : ""}
+            ${f.dataHora ? `<span class="fatura-chip-meta"><span class="chip-label">Data:</span><span class="fatura-chip">${escapeHtml(f.dataHora)}</span></span>` : ""}
+            ${vencimento ? `<span class="fatura-chip-meta"><span class="chip-label">Venc.:</span><span class="fatura-chip">${escapeHtml(vencimento)}</span></span>` : ""}
+            ${f.formaPagamento ? `<span class="fatura-chip-meta"><span class="chip-label">Forma:</span><span class="fatura-chip">${escapeHtml(f.formaPagamento)}</span></span>` : ""}
           </div>
         </div>
 

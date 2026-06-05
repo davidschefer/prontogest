@@ -93,9 +93,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         <div class="func-body">
           <div class="func-chips">
-            ${f.orgao ? `<span class="func-chip">Orgao: ${escapeHtml(f.orgao)}</span>` : ""}
-            ${f.registro ? `<span class="func-chip">Registro: ${escapeHtml(f.registro)}</span>` : ""}
-            ${f.role ? `<span class="func-chip">Perfil: ${escapeHtml(f.role)}</span>` : ""}
+            ${f.orgao ? `<span class="func-chip-meta"><span class="chip-label">Órgão:</span><span class="func-chip">${escapeHtml(f.orgao)}</span></span>` : ""}
+            ${f.registro ? `<span class="func-chip-meta"><span class="chip-label">Registro:</span><span class="func-chip">${escapeHtml(f.registro)}</span></span>` : ""}
+            ${f.role ? `<span class="func-chip-meta"><span class="chip-label">Perfil:</span><span class="func-chip">${escapeHtml(f.role)}</span></span>` : ""}
           </div>
           <div class="func-assinatura">${imgHtml}</div>
         </div>

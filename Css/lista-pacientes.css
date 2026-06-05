@@ -124,6 +124,21 @@ body:not(.his-layout) #listaPacientes.lista .item.patient-card {
 .patient-meta div {
     display: inline-flex;
     align-items: center;
+    gap: 4px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #0a2540;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+.patient-meta .chip-label {
+    color: #0a2540;
+}
+.patient-meta-chip {
+    display: inline-flex;
+    align-items: center;
     padding: 5px 8px;
     border: 1px solid #dbe7f3;
     border-radius: 999px;

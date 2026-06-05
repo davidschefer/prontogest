@@ -95,7 +95,17 @@ body:not(.his-layout) #listaFuncionarios.lista .item.funcionario-card{
 .func-nome{ font-weight:800; color:#0a1a33; font-size:15px; }
 .func-email{ color:#526173; font-size:12px; }
 .func-badges,
-.func-chips{ display:flex; flex-wrap:wrap; gap:7px; justify-content:flex-end; }
+.func-chips{ display:flex; flex-wrap:wrap; gap:7px; justify-content:flex-end; align-items:center; }
+.func-chip-meta{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  color:#0a2540;
+  font-size:11px;
+  font-weight:800;
+  line-height:1.2;
+}
+.func-chip-meta .chip-label{ color:#0a2540; }
 .func-badge,
 .func-chip{
   display:inline-flex;

@@ -406,12 +406,12 @@
         <div class="cadastro-card-body">
           <div class="cadastro-card-line">${escapeHtml(enderecoTxt || "Endereco nao informado")}</div>
           <div class="cadastro-chip-row">
-            ${p.nascimento ? `<span class="cadastro-chip">Nascimento: ${escapeHtml(p.nascimento)}</span>` : ""}
-            ${p.telefone ? `<span class="cadastro-chip">Telefone: ${escapeHtml(p.telefone)}</span>` : ""}
-            ${p.telefoneFamiliar ? `<span class="cadastro-chip">Familiar: ${escapeHtml(p.telefoneFamiliar)}</span>` : ""}
-            ${p.familiarResponsavel ? `<span class="cadastro-chip">Responsavel: ${escapeHtml(p.familiarResponsavel)}</span>` : ""}
-            ${p.convenio ? `<span class="cadastro-chip">Convenio: ${escapeHtml(p.convenio)}</span>` : ""}
-            ${p.convenio === "Plano de Saúde" && p.planoSaude ? `<span class="cadastro-chip">Plano: ${escapeHtml(p.planoSaude)}</span>` : ""}
+            ${p.nascimento ? `<span class="cadastro-chip-meta"><span class="chip-label">Nascimento:</span><span class="cadastro-chip">${escapeHtml(p.nascimento)}</span></span>` : ""}
+            ${p.telefone ? `<span class="cadastro-chip-meta"><span class="chip-label">Telefone:</span><span class="cadastro-chip">${escapeHtml(p.telefone)}</span></span>` : ""}
+            ${p.telefoneFamiliar ? `<span class="cadastro-chip-meta"><span class="chip-label">Familiar:</span><span class="cadastro-chip">${escapeHtml(p.telefoneFamiliar)}</span></span>` : ""}
+            ${p.familiarResponsavel ? `<span class="cadastro-chip-meta"><span class="chip-label">Responsável:</span><span class="cadastro-chip">${escapeHtml(p.familiarResponsavel)}</span></span>` : ""}
+            ${p.convenio ? `<span class="cadastro-chip-meta"><span class="chip-label">Convênio:</span><span class="cadastro-chip">${escapeHtml(p.convenio)}</span></span>` : ""}
+            ${p.convenio === "Plano de Saúde" && p.planoSaude ? `<span class="cadastro-chip-meta"><span class="chip-label">Plano:</span><span class="cadastro-chip">${escapeHtml(p.planoSaude)}</span></span>` : ""}
           </div>
         </div>
 

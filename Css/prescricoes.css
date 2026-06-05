@@ -135,6 +135,21 @@ body:not(.his-layout) #listaPrescricoes.lista .item.prescription-card {
         flex-wrap: wrap;
         gap: 8px;
         margin-top: 6px;
+        align-items: center;
+}
+
+.chip-meta {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: #0a2540;
+        font-size: 11px;
+        font-weight: 800;
+        line-height: 1.2;
+}
+
+.chip-meta .chip-label {
+        color: #0a2540;
 }
 
 .chip {
@@ -202,6 +217,7 @@ body:not(.his-layout) #listaPrescricoes.lista .item.prescription-card {
         flex-wrap: wrap;
         gap: 8px;
         margin-top: 6px;
+        align-items: center;
         overflow: hidden;
 }
 

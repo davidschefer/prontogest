@@ -466,10 +466,10 @@
         <div class="consult-card-body">
           <div class="consult-info">${escapeHtml(observacao || tipo || "Consulta agendada")}</div>
           <div class="consult-chips">
-            ${dataBR ? `<span class="consult-chip">Data: ${escapeHtml(dataBR)}</span>` : ""}
-            ${c.hora ? `<span class="consult-chip">Hora: ${escapeHtml(c.hora)}</span>` : ""}
-            ${tipo ? `<span class="consult-chip">Tipo: ${escapeHtml(tipo)}</span>` : ""}
-            ${status ? `<span class="consult-chip">Status: ${escapeHtml(status)}</span>` : ""}
+            ${dataBR ? `<span class="consult-chip-meta"><span class="chip-label">Data:</span><span class="consult-chip">${escapeHtml(dataBR)}</span></span>` : ""}
+            ${c.hora ? `<span class="consult-chip-meta"><span class="chip-label">Hora:</span><span class="consult-chip">${escapeHtml(c.hora)}</span></span>` : ""}
+            ${tipo ? `<span class="consult-chip-meta"><span class="chip-label">Tipo:</span><span class="consult-chip">${escapeHtml(tipo)}</span></span>` : ""}
+            ${status ? `<span class="consult-chip-meta"><span class="chip-label">Status:</span><span class="consult-chip">${escapeHtml(status)}</span></span>` : ""}
           </div>
         </div>
 

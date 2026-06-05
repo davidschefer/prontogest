@@ -140,11 +140,11 @@
           </div>
 
           <div class="patient-meta">
-            <div><strong>CPF:</strong> ${escapeHtml(p.cpf || "-")}</div>
-            <div><strong>Nascimento:</strong> ${escapeHtml(nascimento || '-')}</div>
-            <div><strong>Telefone:</strong> ${escapeHtml(p.telefone || "-")}</div>
-            <div><strong>Responsável:</strong> ${escapeHtml(p.responsavel || p.responsavel_nome || "-")}</div>
-            <div><strong>Convênio:</strong> ${escapeHtml(p.convenio || "-")}</div>
+            <div><span class="chip-label">CPF:</span><span class="patient-meta-chip">${escapeHtml(p.cpf || "-")}</span></div>
+            <div><span class="chip-label">Nascimento:</span><span class="patient-meta-chip">${escapeHtml(nascimento || '-')}</span></div>
+            <div><span class="chip-label">Telefone:</span><span class="patient-meta-chip">${escapeHtml(p.telefone || "-")}</span></div>
+            <div><span class="chip-label">Responsável:</span><span class="patient-meta-chip">${escapeHtml(p.responsavel || p.responsavel_nome || "-")}</span></div>
+            <div><span class="chip-label">Convênio:</span><span class="patient-meta-chip">${escapeHtml(p.convenio || "-")}</span></div>
           </div>
 
           <div class="list-actions">

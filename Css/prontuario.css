@@ -642,14 +642,28 @@ body.his-layout .content {
   display:flex;
   gap:8px;
   flex-wrap:wrap;
+  align-items:center;
   margin-top:8px;
+}
+.evo-chip-meta{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  color:#0a2540;
+  font-size:11px;
+  font-weight:800;
+  line-height:1.2;
+}
+.evo-chip-meta .chip-label{
+  color:#0a2540;
 }
 .evo-chip{
   background:#f8fafc;
   border:1px solid #e6edf6;
-  padding:6px 8px;
+  padding:5px 8px;
   border-radius:999px;
-  font-size:13px;
+  font-size:11px;
+  font-weight:700;
   color:#0a1a33;
 }
 .evo-empty{ color:#6b7280; font-size:13px; padding:8px 0; }

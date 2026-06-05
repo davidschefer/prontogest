@@ -97,7 +97,17 @@ body:not(.his-layout) #listaConsultas.lista .item.consult-card{
 .consult-chip{ background:#f7fbff; border:1px solid #dbe7f3; padding:5px 8px; border-radius:999px; font-size:11px; color:#0a2540; font-weight:700; }
 .consult-card-body{ padding:8px 0 0; color:#0a1a33; }
 .consult-info{ margin-bottom:8px; color:#0a1a33; }
-.consult-chips{ display:flex; gap:7px; flex-wrap:wrap; }
+.consult-chips{ display:flex; gap:7px; flex-wrap:wrap; align-items:center; }
+.consult-chip-meta{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  color:#0a2540;
+  font-size:11px;
+  font-weight:800;
+  line-height:1.2;
+}
+.consult-chip-meta .chip-label{ color:#0a2540; }
 .consult-card-footer{ display:flex; justify-content:flex-end; gap:6px; margin-top:12px; flex-wrap:wrap; }
 
 .list-actions button, .list-actions .btn{ width:auto; min-width:0; padding:6px 9px; margin:0; display:inline-flex; font-size:11px; font-weight:800; line-height:1.2; border-radius:8px; }

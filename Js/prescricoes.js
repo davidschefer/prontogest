@@ -936,12 +936,12 @@ function imprimirPrescricao(id) {
             </div>
 
             <div class="presc-chips">
-              ${p.dose ? `<span class="chip">Dose: ${escapeHtml(p.dose)}</span>` : ""}
-              ${p.frequencia ? `<span class="chip">Freq: ${escapeHtml(p.frequencia)}</span>` : ""}
-              ${p.via ? `<span class="chip">Via: ${escapeHtml(p.via)}</span>` : ""}
-              ${horarios ? `<span class="chip">Horários: ${escapeHtml(horarios)}</span>` : ""}
-              ${duracao ? `<span class="chip">Período: ${escapeHtml(duracao)}</span>` : ""}
-              ${p.observacoes ? `<span class="chip">Observações</span>` : ""}
+              ${p.dose ? `<span class="chip-meta"><span class="chip-label">Dose:</span><span class="chip">${escapeHtml(p.dose)}</span></span>` : ""}
+              ${p.frequencia ? `<span class="chip-meta"><span class="chip-label">Freq:</span><span class="chip">${escapeHtml(p.frequencia)}</span></span>` : ""}
+              ${p.via ? `<span class="chip-meta"><span class="chip-label">Via:</span><span class="chip">${escapeHtml(p.via)}</span></span>` : ""}
+              ${horarios ? `<span class="chip-meta"><span class="chip-label">Horários:</span><span class="chip">${escapeHtml(horarios)}</span></span>` : ""}
+              ${duracao ? `<span class="chip-meta"><span class="chip-label">Período:</span><span class="chip">${escapeHtml(duracao)}</span></span>` : ""}
+              ${p.observacoes ? `<span class="chip-meta"><span class="chip-label">Obs.:</span><span class="chip">Sim</span></span>` : ""}
             </div>
 
             <div class="presc-meta">

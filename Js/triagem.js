@@ -915,12 +915,12 @@
 
       // Body (diagnóstico, evolução, chips)
       const chips = [];
-      if (t.pa) chips.push(`<span class="triagem-chip">PA: ${escapeHtml(t.pa)}</span>`);
-      if (t.fc) chips.push(`<span class="triagem-chip">FC: ${escapeHtml(t.fc)}</span>`);
-      if (t.fr) chips.push(`<span class="triagem-chip">FR: ${escapeHtml(t.fr)}</span>`);
-      if (t.temp) chips.push(`<span class="triagem-chip">Temp: ${escapeHtml(t.temp)}°C</span>`);
-      if (t.saturacao) chips.push(`<span class="triagem-chip">Sat: ${escapeHtml(t.saturacao)}%</span>`);
-      if (t.hgt) chips.push(`<span class="triagem-chip">HGT: ${escapeHtml(t.hgt)}</span>`);
+      if (t.pa) chips.push(`<span class="triagem-chip-meta"><span class="chip-label">PA:</span><span class="triagem-chip">${escapeHtml(t.pa)}</span></span>`);
+      if (t.fc) chips.push(`<span class="triagem-chip-meta"><span class="chip-label">FC:</span><span class="triagem-chip">${escapeHtml(t.fc)}</span></span>`);
+      if (t.fr) chips.push(`<span class="triagem-chip-meta"><span class="chip-label">FR:</span><span class="triagem-chip">${escapeHtml(t.fr)}</span></span>`);
+      if (t.temp) chips.push(`<span class="triagem-chip-meta"><span class="chip-label">Temp:</span><span class="triagem-chip">${escapeHtml(t.temp)}°C</span></span>`);
+      if (t.saturacao) chips.push(`<span class="triagem-chip-meta"><span class="chip-label">SAT:</span><span class="triagem-chip">${escapeHtml(t.saturacao)}%</span></span>`);
+      if (t.hgt) chips.push(`<span class="triagem-chip-meta"><span class="chip-label">HGT:</span><span class="triagem-chip">${escapeHtml(t.hgt)}</span></span>`);
 
       const bodyHtml = `
         <div class="triagem-card-body">
