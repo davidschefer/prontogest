@@ -56,23 +56,33 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     lista.forEach((f) => {
       const item = document.createElement("div");
-      item.className = "item";
+      item.className = "item funcionario-card";
 
       const imgHtml = f.assinaturaDataUrl
         ? `<img src="${f.assinaturaDataUrl}" alt="Assinatura ${escapeHtml(f.nome)}" style="height:40px; max-width:180px; object-fit:contain;">`
         : `<span style="opacity:.7">Sem imagem</span>`;
 
       item.innerHTML = `
-        <p><strong>Nome:</strong> ${escapeHtml(f.nome)}</p>
-        <p><strong>E-mail:</strong> ${escapeHtml(f.email)}</p>
-        <p><strong>Perfil:</strong> ${escapeHtml(f.role)}</p>
-        <p><strong>Órgão:</strong> ${escapeHtml(f.orgao)}</p>
-        <p><strong>Registro:</strong> ${escapeHtml(f.registro)}</p>
-        <p><strong>Carimbo/Assinatura:</strong> ${imgHtml}</p>
-        <div class="list-actions">
-          <button type="button" data-id="${String(f.id)}" class="btn btn-sm btn-imprimir">Imprimir</button>
-          <button type="button" data-id="${String(f.id)}" class="btn btn-primary btn-sm">Editar</button>
-          <button type="button" data-id="${String(f.id)}" class="btn btn-danger btn-sm">Remover</button>
+        <div class="func-header">
+          <div class="func-main">
+            <div class="func-nome">${escapeHtml(f.nome)}</div>
+            <div class="func-role">${escapeHtml(f.role || "-")}</div>
+          </div>
+          <div class="func-meta">
+            <div class="func-orgao">${escapeHtml(f.orgao || "-")}</div>
+            <div class="func-registro">${escapeHtml(f.registro || "-")}</div>
+          </div>
+        </div>
+
+        <div class="func-body">
+          <div class="func-email">${escapeHtml(f.email || "-")}</div>
+          <div class="func-assinatura">${imgHtml}</div>
+        </div>
+
+        <div class="func-footer list-actions">
+          <button type="button" class="btn btn-sm btn-imprimir">Imprimir</button>
+          <button type="button" class="btn btn-primary btn-sm">Editar</button>
+          <button type="button" class="btn btn-danger btn-sm">Remover</button>
         </div>
       `;
 

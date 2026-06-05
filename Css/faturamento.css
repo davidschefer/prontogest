@@ -95,6 +95,25 @@ button:hover {
   margin-bottom: 20px;
   box-shadow: 0 3px 15px rgba(0, 0, 0, 0.07);
 }
+.fatura-card{
+  background:#fff;
+  border:1px solid #e6edf6;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:12px;
+  box-shadow:0 2px 10px rgba(15,23,42,0.03);
+}
+.fatura-card-header{ display:flex; justify-content:space-between; gap:12px; align-items:flex-start; border-bottom:1px solid #f3f7fb; padding-bottom:8px; }
+.fatura-meta{ display:flex; flex-direction:column; gap:6px; }
+.fatura-desc{ font-weight:700; color:#0a1a33; }
+.fatura-sub{ color:#6b7280; font-size:13px; }
+.fatura-right{ text-align:right; min-width:140px; }
+.fatura-valor{ font-weight:800; color:#0a2540; font-size:16px; }
+.fatura-status{ margin-top:6px; }
+.fatura-card-footer{ display:flex; justify-content:flex-end; margin-top:8px; }
+.fatura-actions{ display:flex; gap:8px; }
+
+.list-actions button, .list-actions .btn{ width:auto; padding:6px 8px; font-size:12px; border-radius:8px; }
 .item p {
   margin: 5px 0;
 }

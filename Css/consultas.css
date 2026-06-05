@@ -72,6 +72,25 @@
              margin-bottom: 20px;
              box-shadow: 0 3px 15px rgba(0, 0, 0, 0.07);
        }
+/* Card variant similar to Prontuário evoluções */
+.consult-card{
+  background:#ffffff;
+  border:1px solid #e6edf6;
+  border-radius:12px;
+  padding:12px 14px;
+  margin-bottom:12px;
+  box-shadow: 0 2px 10px rgba(15,23,42,0.03);
+}
+.consult-card-header{ display:flex; justify-content:space-between; align-items:center; gap:12px; border-bottom:1px solid #f1f5f9; padding-bottom:8px; margin-bottom:8px; }
+.consult-meta{ display:flex; flex-direction:column; gap:4px; }
+.consult-paciente{ font-weight:700; color:#0a1a33; }
+.consult-datetime{ font-size:13px; color:#6b7280; }
+.consult-header-right{ display:flex; align-items:center; gap:8px; }
+.consult-chip{ background:#f1f5f9; border:1px solid #e6edf6; padding:6px 10px; border-radius:999px; font-size:12px; color:#0a2540; font-weight:700; }
+.consult-card-body{ padding:6px 0; color:#0a1a33; }
+.consult-card-footer{ display:flex; justify-content:flex-end; gap:8px; margin-top:8px; }
+
+.list-actions button, .list-actions .btn{ width:auto; padding:6px 8px; font-size:12px; border-radius:8px; }
        .item p {
              margin: 5px 0;
        }

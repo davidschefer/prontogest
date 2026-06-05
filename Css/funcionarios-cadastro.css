@@ -79,3 +79,15 @@
     width: 100%;
   }
 }
+
+/* Lista de funcionários - cards */
+.funcionario-card{ background:#fff; border:1px solid #e6edf6; border-radius:12px; padding:12px; margin-bottom:12px; box-shadow:0 2px 10px rgba(15,23,42,0.03); }
+.func-header{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; border-bottom:1px solid #f3f7fb; padding-bottom:8px; }
+.func-main{ display:flex; flex-direction:column; gap:4px; }
+.func-nome{ font-weight:700; color:#0a1a33; }
+.func-role{ font-size:13px; color:#6b7280; }
+.func-meta{ text-align:right; color:#6b7280; font-size:13px; }
+.func-body{ display:flex; justify-content:space-between; gap:12px; padding-top:8px; align-items:center; }
+.func-email{ color:#0a1a33; }
+.func-assinatura img{ max-height:48px; }
+.func-footer{ display:flex; justify-content:flex-end; margin-top:8px; gap:8px; }

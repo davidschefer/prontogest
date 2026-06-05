@@ -451,31 +451,44 @@
       if (status === "vencido") contasVencidas += 1;
 
       const item = document.createElement("div");
-      item.className = "item";
+      item.className = "item fatura-card";
 
       const nome = f.pacienteNome || (f.pacienteId ? getPacienteNomeById(f.pacienteId) : "-");
-
       const statusHtml = status ? `<span class="status-badge">${escapeHtml(status)}</span>` : "";
+      const tipoLabel = String(f.tipo || "entrada");
 
       item.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
-          <div>
-            <p><strong>${escapeHtml(f.descricao || "-")}</strong></p>
-            <p><small>${escapeHtml(nome)} · ${escapeHtml(f.convenio || "-")}</small></p>
-            <p><small>${escapeHtml(f.dataHora || "-")}</small></p>
+        <div class="fatura-card-header">
+          <div class="fatura-meta">
+            <div class="fatura-desc"><strong>${escapeHtml(f.descricao || "-")}</strong></div>
+            <div class="fatura-sub"><small>${escapeHtml(nome)} · ${escapeHtml(f.convenio || "-")}</small></div>
+            <div class="fatura-date"><small>${escapeHtml(f.dataHora || "-")}</small></div>
           </div>
-          <div style="text-align:right; min-width:140px;">
-            <div>${formatarMoedaBR(val)}</div>
-            <div style="margin-top:6px;">${statusHtml}</div>
-            <div style="margin-top:8px;">
-              <button class="btn btn-sm btn-imprimir" type="button" onclick="imprimirFatura('${String(f.id)}')">Imprimir</button>
-              <button class="btn btn-primary btn-sm" type="button" onclick="editarFatura('${String(f.id)}')">Editar</button>
-              <button class="btn btn-danger btn-sm" type="button" onclick="removerFatura('${String(f.id)}')">Remover</button>
-              ${status !== 'pago' ? `<button class="btn btn-success btn-sm" type="button" onclick="marcarPago('${String(f.id)}')">Marcar como Pago</button>` : `<button class="btn btn-warning btn-sm" type="button" onclick="marcarPendente('${String(f.id)}')">Marcar Pendente</button>`}
-            </div>
+          <div class="fatura-right">
+            <div class="fatura-valor">${formatarMoedaBR(val)}</div>
+            <div class="fatura-status">${statusHtml}</div>
+          </div>
+        </div>
+
+        <div class="fatura-card-footer">
+          <div class="fatura-actions">
+            <button class="btn btn-sm btn-imprimir" type="button">Imprimir</button>
+            <button class="btn btn-primary btn-sm" type="button">Editar</button>
+            <button class="btn btn-danger btn-sm" type="button">Remover</button>
+            ${status !== 'pago' ? `<button class="btn btn-success btn-sm" type="button">Marcar como Pago</button>` : `<button class="btn btn-warning btn-sm" type="button">Marcar Pendente</button>`}
           </div>
         </div>
       `;
+
+      // attach handlers preserving existing functions
+      const actions = item.querySelectorAll('.fatura-actions button');
+      if (actions[0]) actions[0].addEventListener('click', () => imprimirFatura(String(f.id)));
+      if (actions[1]) actions[1].addEventListener('click', () => editarFatura(String(f.id)));
+      if (actions[2]) actions[2].addEventListener('click', () => removerFatura(String(f.id)));
+      if (actions[3]) {
+        if (status !== 'pago') actions[3].addEventListener('click', () => marcarPago(String(f.id)));
+        else actions[3].addEventListener('click', () => marcarPendente(String(f.id)));
+      }
 
       div.appendChild(item);
     });

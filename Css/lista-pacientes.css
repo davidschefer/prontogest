@@ -104,6 +104,8 @@ h1 {
     font-size: 14px;
     margin-bottom: 12px;
 }
+.list-actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:10px; }
+.list-actions button, .list-actions .btn{ width:auto; padding:6px 8px; font-size:12px; border-radius:8px; }
 .linha {
     display: flex;
     justify-content: space-between;

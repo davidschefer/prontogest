@@ -143,6 +143,7 @@ button:disabled {
 .presc-actions {
         display: flex;
         flex-direction: column;
+        justify-content: space-between;
         align-items: flex-end;
         gap: 8px;
         min-width: 160px;
@@ -162,6 +163,7 @@ button:disabled {
 .status-badge.sem { background: #94a3b8; }
 
 .list-actions { display:flex; gap:8px; margin-top:6px; }
+.list-actions button, .list-actions .btn { width:auto; padding:6px 8px; font-size:12px; border-radius:8px; }
 .livre {
         background: #81c995;
         color: white;
