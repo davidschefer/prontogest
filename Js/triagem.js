@@ -888,44 +888,66 @@
 
     uiList.forEach((t) => {
       const item = document.createElement("div");
-      item.className = "item";
+      item.className = "item triagem-card";
 
       const profTxt = formatarProfissional(t);
-      const risco = String(t.risco || "-");
-      const evolucaoCurta = escapeHtml(resumirDescricaoTriagem(t.evolucao || ""));
-      const evolucaoCompleta = escapeHtml(t.evolucao || "");
+      const risco = String(t.risco || "").trim();
+      const riscoClass = risco
+        ? String(risco).toLowerCase().replace(/[^a-z0-9]+/g, "-")
+        : "sem";
 
-      item.innerHTML = `
-        <h3>${escapeHtml(t.dataHoraBR || "-")} - Triagem</h3>
-        <p><strong>Paciente:</strong> ${escapeHtml(t.pacienteNome || "-")}</p>
-        <p><strong>Diagnostico:</strong> ${escapeHtml(t.diagnostico || "-")}</p>
-        <p><strong>Profissional:</strong> ${escapeHtml(profTxt || "-")}</p>
-        <div class="triagem-compact">
-          <div class="triagem-desc" title="${evolucaoCompleta}">
-            <strong>Evolucao:</strong> ${evolucaoCurta}
+      const evolucaoFull = String(t.evolucao || "");
+      const evolucaoShort = escapeHtml(resumirDescricaoTriagem(evolucaoFull));
+
+      // Header
+      const headerHtml = `
+        <div class="triagem-card-header">
+          <div class="triagem-meta">
+            <div class="triagem-data">${escapeHtml(t.dataHoraBR || "-")}</div>
+            <div class="triagem-paciente">${escapeHtml(t.pacienteNome || "-")}</div>
           </div>
-          <div class="triagem-vitais">
-            <p>
-              <strong>PA:</strong> ${escapeHtml(t.pa || "-")} |
-              <strong>FC:</strong> ${escapeHtml(t.fc || "-")} |
-              <strong>FR:</strong> ${escapeHtml(t.fr || "-")} |
-              <strong>SAT:</strong> ${escapeHtml(t.saturacao || "-")} |
-              <strong>Temp:</strong> ${escapeHtml(t.temp || "-")} |
-              <strong>HGT:</strong> ${escapeHtml(t.hgt || "-")}
-            </p>
-            <p><strong>Risco:</strong> <span class="pill-risco risco-${escapeHtml(risco.toLowerCase())}">${escapeHtml(risco)}</span></p>
+          <div class="triagem-header-right">
+            ${risco ? `<span class="pill-risco triagem-risco risco-${escapeHtml(riscoClass)}">${escapeHtml(risco)}</span>` : ""}
+            ${profTxt ? `<div class="triagem-profissional">${escapeHtml(profTxt)}</div>` : ""}
           </div>
-        </div>
-        <div class="triagem-actions">
-          <button type="button" class="btn btn-sm btn-imprimir">Imprimir</button>
-          <button type="button" class="btn btn-primary btn-sm">Editar</button>
-          <button type="button" class="btn btn-danger btn-sm">Remover</button>
         </div>
       `;
 
-      item.querySelector(".btn-imprimir").addEventListener("click", () => imprimirTriagem(t.id));
-      item.querySelector(".btn-primary").addEventListener("click", () => editarTriagem(t.id));
-      item.querySelector(".btn-danger").addEventListener("click", () => removerTriagem(t.id, t.pacienteId));
+      // Body (diagnóstico, evolução, chips)
+      const chips = [];
+      if (t.pa) chips.push(`<span class="triagem-chip">PA: ${escapeHtml(t.pa)}</span>`);
+      if (t.fc) chips.push(`<span class="triagem-chip">FC: ${escapeHtml(t.fc)}</span>`);
+      if (t.fr) chips.push(`<span class="triagem-chip">FR: ${escapeHtml(t.fr)}</span>`);
+      if (t.temp) chips.push(`<span class="triagem-chip">Temp: ${escapeHtml(t.temp)}°C</span>`);
+      if (t.saturacao) chips.push(`<span class="triagem-chip">Sat: ${escapeHtml(t.saturacao)}%</span>`);
+      if (t.hgt) chips.push(`<span class="triagem-chip">HGT: ${escapeHtml(t.hgt)}</span>`);
+
+      const bodyHtml = `
+        <div class="triagem-card-body">
+          <div class="triagem-diagnostico"><strong>Diagnóstico:</strong> ${escapeHtml(t.diagnostico || "-")}</div>
+          ${evolucaoFull ? `<div class="triagem-evolucao" title="${escapeHtml(evolucaoFull)}"><strong>Evolução:</strong> ${evolucaoShort}</div>` : ""}
+          <div class="triagem-chips">${chips.join(" ")}</div>
+        </div>
+      `;
+
+      // Footer / actions (keep existing functions)
+      const actionsHtml = `
+        <div class="triagem-card-footer triagem-actions">
+          <button type="button" class="btn-action ver btn-imprimir" aria-label="Imprimir triagem">Imprimir</button>
+          <button type="button" class="btn-action editar btn-primary" aria-label="Editar triagem">Editar</button>
+          <button type="button" class="btn-action remover btn-danger" aria-label="Remover triagem">Remover</button>
+        </div>
+      `;
+
+      item.innerHTML = headerHtml + bodyHtml + actionsHtml;
+
+      const btnImp = item.querySelector(".btn-imprimir");
+      const btnEd = item.querySelector(".btn-primary");
+      const btnRm = item.querySelector(".btn-danger");
+
+      if (btnImp) btnImp.addEventListener("click", () => imprimirTriagem(t.id));
+      if (btnEd) btnEd.addEventListener("click", () => editarTriagem(t.id));
+      if (btnRm) btnRm.addEventListener("click", () => removerTriagem(t.id, t.pacienteId));
 
       div.appendChild(item);
     });
