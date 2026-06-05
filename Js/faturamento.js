@@ -451,56 +451,31 @@
       if (status === "vencido") contasVencidas += 1;
 
       const item = document.createElement("div");
-      item.className = "item fatura-card";
+      item.className = "item";
 
       const nome = f.pacienteNome || (f.pacienteId ? getPacienteNomeById(f.pacienteId) : "-");
-      const statusClass = String(status || "").toLowerCase().replace(/[^a-z0-9]+/g, "-") || "sem";
-      const statusHtml = status ? `<span class="status-badge status-${escapeHtml(statusClass)}">${escapeHtml(status)}</span>` : "";
-      const tipoLabel = String(f.tipo || "entrada");
-      const tipoClass = String(tipoLabel || "").toLowerCase().replace(/[^a-z0-9]+/g, "-") || "entrada";
-      const vencimento = f.vencimentoISO ? new Date(f.vencimentoISO).toLocaleDateString("pt-BR") : "";
+
+      const statusHtml = status ? `<span class="status-badge">${escapeHtml(status)}</span>` : "";
 
       item.innerHTML = `
-        <div class="fatura-card-header">
-          <div class="fatura-meta">
-            <div class="fatura-desc">${escapeHtml(f.descricao || f.categoria || "-")}</div>
-            <div class="fatura-sub">${escapeHtml(nome)}${f.convenio ? ` - ${escapeHtml(f.convenio)}` : ""}</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+          <div>
+            <p><strong>${escapeHtml(f.descricao || "-")}</strong></p>
+            <p><small>${escapeHtml(nome)} · ${escapeHtml(f.convenio || "-")}</small></p>
+            <p><small>${escapeHtml(f.dataHora || "-")}</small></p>
           </div>
-          <div class="fatura-right">
-            <div class="fatura-valor">${formatarMoedaBR(val)}</div>
-            <span class="tipo-badge tipo-${escapeHtml(tipoClass)}">${escapeHtml(tipoLabel)}</span>
-          </div>
-        </div>
-
-        <div class="fatura-card-body">
-          <div class="fatura-chips">
-            ${f.categoria ? `<span class="fatura-chip-meta"><span class="chip-label">Categoria:</span><span class="fatura-chip">${escapeHtml(f.categoria)}</span></span>` : ""}
-            ${status ? `<span class="fatura-chip-meta"><span class="chip-label">Status:</span>${statusHtml}</span>` : ""}
-            ${f.dataHora ? `<span class="fatura-chip-meta"><span class="chip-label">Data:</span><span class="fatura-chip">${escapeHtml(f.dataHora)}</span></span>` : ""}
-            ${vencimento ? `<span class="fatura-chip-meta"><span class="chip-label">Venc.:</span><span class="fatura-chip">${escapeHtml(vencimento)}</span></span>` : ""}
-            ${f.formaPagamento ? `<span class="fatura-chip-meta"><span class="chip-label">Forma:</span><span class="fatura-chip">${escapeHtml(f.formaPagamento)}</span></span>` : ""}
-          </div>
-        </div>
-
-        <div class="fatura-card-footer">
-          <div class="fatura-actions">
-            <button class="btn btn-sm btn-imprimir" type="button">Imprimir</button>
-            <button class="btn btn-primary btn-sm" type="button">Editar</button>
-            <button class="btn btn-danger btn-sm" type="button">Remover</button>
-            ${status !== 'pago' ? `<button class="btn btn-success btn-sm" type="button">Marcar como Pago</button>` : `<button class="btn btn-warning btn-sm" type="button">Marcar Pendente</button>`}
+          <div style="text-align:right; min-width:140px;">
+            <div>${formatarMoedaBR(val)}</div>
+            <div style="margin-top:6px;">${statusHtml}</div>
+            <div style="margin-top:8px;">
+              <button class="btn btn-sm btn-imprimir" type="button" onclick="imprimirFatura('${String(f.id)}')">Imprimir</button>
+              <button class="btn btn-primary btn-sm" type="button" onclick="editarFatura('${String(f.id)}')">Editar</button>
+              <button class="btn btn-danger btn-sm" type="button" onclick="removerFatura('${String(f.id)}')">Remover</button>
+              ${status !== 'pago' ? `<button class="btn btn-success btn-sm" type="button" onclick="marcarPago('${String(f.id)}')">Marcar como Pago</button>` : `<button class="btn btn-warning btn-sm" type="button" onclick="marcarPendente('${String(f.id)}')">Marcar Pendente</button>`}
+            </div>
           </div>
         </div>
       `;
-
-      // attach handlers preserving existing functions
-      const actions = item.querySelectorAll('.fatura-actions button');
-      if (actions[0]) actions[0].addEventListener('click', () => imprimirFatura(String(f.id)));
-      if (actions[1]) actions[1].addEventListener('click', () => editarFatura(String(f.id)));
-      if (actions[2]) actions[2].addEventListener('click', () => removerFatura(String(f.id)));
-      if (actions[3]) {
-        if (status !== 'pago') actions[3].addEventListener('click', () => marcarPago(String(f.id)));
-        else actions[3].addEventListener('click', () => marcarPendente(String(f.id)));
-      }
 
       div.appendChild(item);
     });

@@ -12,21 +12,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const KEY_FUNCIONARIOS = "funcionarios";
 
-  function garantirCssFuncionarios() {
-    const href = "../Css/funcionarios-cadastro.css";
-    const jaCarregado = Array.from(document.styleSheets || []).some((sheet) =>
-      String(sheet.href || "").endsWith("/Css/funcionarios-cadastro.css")
-    );
-    if (jaCarregado) return;
-
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = href;
-    document.head.appendChild(link);
-  }
-
-  garantirCssFuncionarios();
-
   function escapeHtml(str) {
     return String(str ?? "")
       .replaceAll("&", "&amp;")
@@ -71,39 +56,23 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     lista.forEach((f) => {
       const item = document.createElement("div");
-      item.className = "item funcionario-card";
-      const id = escapeHtml(f.id || f.email || f.nome || "");
-      const assinaturaOk = Boolean(f.assinaturaDataUrl);
+      item.className = "item";
 
       const imgHtml = f.assinaturaDataUrl
-        ? `<img src="${escapeHtml(f.assinaturaDataUrl)}" alt="Assinatura ${escapeHtml(f.nome)}">`
-        : `<span>Sem imagem</span>`;
+        ? `<img src="${f.assinaturaDataUrl}" alt="Assinatura ${escapeHtml(f.nome)}" style="height:40px; max-width:180px; object-fit:contain;">`
+        : `<span style="opacity:.7">Sem imagem</span>`;
 
       item.innerHTML = `
-        <div class="func-header">
-          <div class="func-main">
-            <div class="func-nome">${escapeHtml(f.nome || "-")}</div>
-            <div class="func-email">${escapeHtml(f.email || "-")}</div>
-          </div>
-          <div class="func-badges">
-            <span class="func-badge">${escapeHtml(f.role || "perfil")}</span>
-            <span class="func-badge ${assinaturaOk ? "ok" : "muted"}">${assinaturaOk ? "Com assinatura" : "Sem assinatura"}</span>
-          </div>
-        </div>
-
-        <div class="func-body">
-          <div class="func-chips">
-            ${f.orgao ? `<span class="func-chip-meta"><span class="chip-label">Órgão:</span><span class="func-chip">${escapeHtml(f.orgao)}</span></span>` : ""}
-            ${f.registro ? `<span class="func-chip-meta"><span class="chip-label">Registro:</span><span class="func-chip">${escapeHtml(f.registro)}</span></span>` : ""}
-            ${f.role ? `<span class="func-chip-meta"><span class="chip-label">Perfil:</span><span class="func-chip">${escapeHtml(f.role)}</span></span>` : ""}
-          </div>
-          <div class="func-assinatura">${imgHtml}</div>
-        </div>
-
-        <div class="func-footer list-actions">
-          <button type="button" class="btn btn-sm btn-imprimir" data-id="${id}">Imprimir</button>
-          <button type="button" class="btn btn-primary btn-sm" data-id="${id}">Editar</button>
-          <button type="button" class="btn btn-danger btn-sm" data-id="${id}">Remover</button>
+        <p><strong>Nome:</strong> ${escapeHtml(f.nome)}</p>
+        <p><strong>E-mail:</strong> ${escapeHtml(f.email)}</p>
+        <p><strong>Perfil:</strong> ${escapeHtml(f.role)}</p>
+        <p><strong>Órgão:</strong> ${escapeHtml(f.orgao)}</p>
+        <p><strong>Registro:</strong> ${escapeHtml(f.registro)}</p>
+        <p><strong>Carimbo/Assinatura:</strong> ${imgHtml}</p>
+        <div class="list-actions">
+          <button type="button" data-id="${String(f.id)}" class="btn btn-sm btn-imprimir">Imprimir</button>
+          <button type="button" data-id="${String(f.id)}" class="btn btn-primary btn-sm">Editar</button>
+          <button type="button" data-id="${String(f.id)}" class="btn btn-danger btn-sm">Remover</button>
         </div>
       `;
 

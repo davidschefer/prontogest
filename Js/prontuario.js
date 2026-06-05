@@ -1525,7 +1525,7 @@
         .map((vk) => {
           const val = evo[vk.k];
           if (val === undefined || val === null || String(val).trim() === '') return null;
-          return `<span class="evo-chip-meta"><span class="chip-label">${vk.label}:</span><span class="evo-chip">${escapeHtml(val)}</span></span>`;
+          return `<span class="evo-chip"><strong>${vk.label}:</strong> ${escapeHtml(val)}</span>`;
         })
         .filter(Boolean);
 

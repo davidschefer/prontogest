@@ -910,54 +910,22 @@ function imprimirPrescricao(id) {
 
     lista.forEach((p) => {
       const item = document.createElement("div");
-      item.className = "item prescription-card";
+      item.className = "item";
 
       const nome = p.pacienteNome || getPacienteNomeById(p.pacienteId) || "-";
-      const status = String(p.status || "").trim();
-      const statusClass = (function () {
-        const s = String(status || "").toLowerCase();
-        if (!s) return "sem";
-        if (s.includes("ativa")) return "ativa";
-        if (s.includes("susp")) return "suspensa";
-        if (s.includes("final")) return "finalizada";
-        if (s.includes("pend")) return "pendente";
-        return s.replace(/\s+/g, "-").replace(/[^a-z0-9-_]/g, "") || "sem";
-      })();
-      const profissional = p.profissional || p.usuario || localStorage.getItem("auth_nome") || "";
-      const horarios = Array.isArray(p.horarios) ? p.horarios.join(", ") : (p.horarios || "");
-      const duracao = p.duracao || p.periodo || "";
 
       item.innerHTML = `
-        <div class="presc-left">
-          <div class="presc-main">
-            <div class="presc-title">
-              <div class="presc-paciente">${escapeHtml(nome)}</div>
-              <div class="presc-medicamento">${escapeHtml(p.medicamento || "-")}</div>
-            </div>
-
-            <div class="presc-chips">
-              ${p.dose ? `<span class="chip-meta"><span class="chip-label">Dose:</span><span class="chip">${escapeHtml(p.dose)}</span></span>` : ""}
-              ${p.frequencia ? `<span class="chip-meta"><span class="chip-label">Freq:</span><span class="chip">${escapeHtml(p.frequencia)}</span></span>` : ""}
-              ${p.via ? `<span class="chip-meta"><span class="chip-label">Via:</span><span class="chip">${escapeHtml(p.via)}</span></span>` : ""}
-              ${horarios ? `<span class="chip-meta"><span class="chip-label">Horários:</span><span class="chip">${escapeHtml(horarios)}</span></span>` : ""}
-              ${duracao ? `<span class="chip-meta"><span class="chip-label">Período:</span><span class="chip">${escapeHtml(duracao)}</span></span>` : ""}
-              ${p.observacoes ? `<span class="chip-meta"><span class="chip-label">Obs.:</span><span class="chip">Sim</span></span>` : ""}
-            </div>
-
-            <div class="presc-meta">
-              <div><strong>Profissional:</strong> ${escapeHtml(profissional || "-")}</div>
-              <div><strong>Data/Hora:</strong> ${escapeHtml(p.dataHoraBR || "")}</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="presc-actions">
-          ${status ? `<span class="status-badge ${statusClass}">${escapeHtml(status)}</span>` : ""}
-          <div class="list-actions">
-            <button type="button" class="btn btn-sm btn-imprimir" onclick="imprimirPrescricao('${String(p.id)}')">Imprimir</button>
-            <button type="button" class="btn btn-primary btn-sm" onclick="editarPrescricao('${String(p.id)}')">Editar</button>
-            <button type="button" class="btn btn-danger btn-sm" onclick="removerPrescricao('${String(p.id)}')">Remover</button>
-          </div>
+        <p><strong>Paciente:</strong> ${escapeHtml(nome)}</p>
+        <p><strong>Medicamento:</strong> ${escapeHtml(p.medicamento)}</p>
+        <p><strong>Dose:</strong> ${escapeHtml(p.dose)}</p>
+        <p><strong>Frequência:</strong> ${escapeHtml(p.frequencia)}</p>
+        <p><strong>Via:</strong> ${escapeHtml(p.via)}</p>
+        <p><strong>Obs:</strong> ${escapeHtml(p.observacoes || "-")}</p>
+        <p style="opacity:.75"><small>${escapeHtml(p.dataHoraBR || "")}</small></p>
+        <div class="list-actions">
+          <button type="button" class="btn btn-sm btn-imprimir" onclick="imprimirPrescricao('${String(p.id)}')">Imprimir</button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="editarPrescricao('${String(p.id)}')">Editar</button>
+          <button type="button" class="btn btn-danger btn-sm" onclick="removerPrescricao('${String(p.id)}')">Remover</button>
         </div>
       `;
 

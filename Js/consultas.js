@@ -444,47 +444,22 @@
 
     lista.forEach((c) => {
       const item = document.createElement("div");
-      item.className = "item consult-card";
+      item.className = "item";
 
       const nome = c.pacienteNome || getPacienteNomeById(c.pacienteId) || "-";
       const dataBR = c.dataBR || formatarDataBR(c.data);
-      const tipo = String(c.tipo || "");
-      const status = String(c.status || "").trim();
-      const observacao = String(c.observacao || c.observacoes || c.obs || "").trim();
 
       item.innerHTML = `
-        <div class="consult-card-header">
-          <div class="consult-meta">
-            <div class="consult-paciente">${escapeHtml(nome)}</div>
-            <div class="consult-datetime">${escapeHtml(dataBR)} ${escapeHtml(c.hora || "")}</div>
-          </div>
-          <div class="consult-header-right">
-            ${tipo ? `<span class="consult-chip">${escapeHtml(tipo)}</span>` : ""}
-          </div>
-        </div>
-
-        <div class="consult-card-body">
-          <div class="consult-info">${escapeHtml(observacao || tipo || "Consulta agendada")}</div>
-          <div class="consult-chips">
-            ${dataBR ? `<span class="consult-chip-meta"><span class="chip-label">Data:</span><span class="consult-chip">${escapeHtml(dataBR)}</span></span>` : ""}
-            ${c.hora ? `<span class="consult-chip-meta"><span class="chip-label">Hora:</span><span class="consult-chip">${escapeHtml(c.hora)}</span></span>` : ""}
-            ${tipo ? `<span class="consult-chip-meta"><span class="chip-label">Tipo:</span><span class="consult-chip">${escapeHtml(tipo)}</span></span>` : ""}
-            ${status ? `<span class="consult-chip-meta"><span class="chip-label">Status:</span><span class="consult-chip">${escapeHtml(status)}</span></span>` : ""}
-          </div>
-        </div>
-
-        <div class="consult-card-footer list-actions">
-          <button type="button" class="btn btn-sm btn-imprimir">Imprimir</button>
-          <button type="button" class="btn btn-primary btn-sm">Editar</button>
-          <button type="button" class="btn btn-danger btn-sm">Remover</button>
+        <p><strong>Paciente:</strong> ${escapeHtml(nome)}</p>
+        <p><strong>Data:</strong> ${escapeHtml(dataBR)}</p>
+        <p><strong>Hora:</strong> ${escapeHtml(c.hora || "")}</p>
+        <p><strong>Tipo:</strong> ${escapeHtml(c.tipo || "")}</p>
+        <div class="list-actions">
+          <button type="button" class="btn btn-sm btn-imprimir" onclick="imprimirConsulta('${String(c.id)}')">Imprimir</button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="editarConsulta('${String(c.id)}')">Editar</button>
+          <button type="button" class="btn btn-danger btn-sm" onclick="removerConsulta('${String(c.id)}')">Remover</button>
         </div>
       `;
-
-      // attach handlers (preserve global functions)
-      const bts = item.querySelectorAll("button");
-      if (bts[0]) bts[0].addEventListener("click", () => imprimirConsulta(String(c.id)));
-      if (bts[1]) bts[1].addEventListener("click", () => editarConsulta(String(c.id)));
-      if (bts[2]) bts[2].addEventListener("click", () => removerConsulta(String(c.id)));
 
       div.appendChild(item);
     });
