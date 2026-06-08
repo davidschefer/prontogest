@@ -25,7 +25,7 @@ node server.js
 
 Acesse:
 
-app.pronotgest.com.br
+app.pronotgest.com.br 
 
 🎯 Objetivo
 
