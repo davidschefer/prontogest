@@ -25,7 +25,8 @@ node server.js
 
 Acesse:
 
-http://localhost:3000/Html/login.html
+app.pronotgest.com.br
+
 🎯 Objetivo
 
 Projeto voltado para uso real em clínicas de pequeno porte, com foco em:
