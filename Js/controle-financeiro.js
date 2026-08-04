@@ -2,52 +2,7 @@
   const STORAGE_KEY = "superadmin_financeiro";
 
   function getDefaultData() {
-    return [
-      {
-        clinica_id: "clinic-001",
-        nome: "Clínica São Lucas",
-        status: "ativo",
-        implantacao: 7200,
-        mensalidade: 1250,
-        ultimaCobranca: "2025-08-05",
-        proximoVencimento: "2025-09-05",
-        bloqueado: false,
-        observacao: "Cliente com rotina ativa e pagamento em dia."
-      },
-      {
-        clinica_id: "clinic-002",
-        nome: "Centro Vida Nova",
-        status: "trial",
-        implantacao: 5400,
-        mensalidade: 980,
-        ultimaCobranca: "2025-08-12",
-        proximoVencimento: "2025-09-12",
-        bloqueado: false,
-        observacao: "Período de avaliação com acesso liberado pelo time comercial."
-      },
-      {
-        clinica_id: "clinic-003",
-        nome: "Nova Esperança Saúde",
-        status: "inadimplente",
-        implantacao: 8300,
-        mensalidade: 1490,
-        ultimaCobranca: "2025-07-18",
-        proximoVencimento: "2025-08-18",
-        bloqueado: true,
-        observacao: "Cobrança recorrente atrasada; bloqueio automático ativado."
-      },
-      {
-        clinica_id: "clinic-004",
-        nome: "Atena Clínica Integrada",
-        status: "ativo",
-        implantacao: 6600,
-        mensalidade: 1180,
-        ultimaCobranca: "2025-08-02",
-        proximoVencimento: "2025-09-02",
-        bloqueado: false,
-        observacao: "Plano mensal em regra com baixa rotatividade."
-      }
-    ];
+    return [];
   }
 
   function readData() {
