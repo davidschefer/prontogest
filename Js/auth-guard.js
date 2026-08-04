@@ -1,9 +1,9 @@
 /* ===========================
    auth-guard.js -" Mini SGH
-   - Protege páginas privadas
-   - Redireciona para login se não autenticado
+   - Protege pï¿½ginas privadas
+   - Redireciona para login se nï¿½o autenticado
    - Controle por role (admin / funcionario)
-   - Seguro para novas páginas futuras
+   - Seguro para novas pï¿½ginas futuras
    =========================== */
 
 (function () {
@@ -29,7 +29,7 @@
   if (page === "login.html") return;
 
   /* ---------------------------
-     Estado de autenticação
+     Estado de autenticaï¿½ï¿½o
   --------------------------- */
   const token = localStorage.getItem("auth_token");
 
@@ -55,10 +55,10 @@
          Controle por role
       --------------------------- */
 
-      // Y'' Admin acessa tudo
-      if (role === "admin") return;
+      // Admin e Super Admin acessam tudo
+      if (role === "admin" || role === "superadmin") return;
 
-      // Y' Funcionário: páginas permitidas
+      // Y' Funcionï¿½rio: pï¿½ginas permitidas
       const allowedForFuncionario = new Set([
         "dashboard.html",
         "pacientes.html",

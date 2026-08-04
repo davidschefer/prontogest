@@ -43,10 +43,16 @@
     loginBtn.textContent = isLoading ? "Entrando..." : "Entrar";
   }
 
+  function redirectPorRole() {
+    const role = String(localStorage.getItem("auth_role") || "").trim().toLowerCase();
+    const destino = role === "superadmin" ? "./super-admin.html" : "./dashboard.html";
+    window.location.href = destino;
+  }
+
   // Proteção: se já está logado, redireciona
   const tokenExistente = localStorage.getItem("auth_token");
   if (tokenExistente) {
-    window.location.href = "./dashboard.html";
+    redirectPorRole();
     return;
   }
 
@@ -271,7 +277,7 @@
 
       lembrarEmailSeMarcado(email);
       showToast("Login realizado com sucesso.", "success", 1500);
-      window.location.href = "./dashboard.html";
+      redirectPorRole();
       return;
     }
 
@@ -295,7 +301,7 @@
     salvarSessaoProfissional(local);
     lembrarEmailSeMarcado(email);
     showToast("Login realizado com sucesso.", "success", 1500);
-    window.location.href = "./dashboard.html";
+    redirectPorRole();
   });
 })();
 
