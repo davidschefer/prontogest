@@ -88,6 +88,52 @@ const estoqueMovimentacoes = []; // /api/farmacia/movimentos
 const estoque = {}; // /api/farmacia/estoque  (obj { "Dipirona": 10 })
 const estoqueByClinica = {}; // estoque separado por clinica_id (mantÃ©m default em "estoque")
 const medicamentosPadrao = []; // /api/medicamentos-padrao (lista)
+const financeiroClientes = [
+  {
+    clinica_id: "clinic-001",
+    nome: "Clínica São Lucas",
+    status: "ativo",
+    implantacao: 7200,
+    mensalidade: 1250,
+    ultimaCobranca: "2025-08-05",
+    proximoVencimento: "2025-09-05",
+    bloqueado: false,
+    observacao: "Cliente com rotina ativa e pagamento em dia.",
+  },
+  {
+    clinica_id: "clinic-002",
+    nome: "Centro Vida Nova",
+    status: "trial",
+    implantacao: 5400,
+    mensalidade: 980,
+    ultimaCobranca: "2025-08-12",
+    proximoVencimento: "2025-09-12",
+    bloqueado: false,
+    observacao: "Período de avaliação com acesso liberado pelo time comercial.",
+  },
+  {
+    clinica_id: "clinic-003",
+    nome: "Nova Esperança Saúde",
+    status: "inadimplente",
+    implantacao: 8300,
+    mensalidade: 1490,
+    ultimaCobranca: "2025-07-18",
+    proximoVencimento: "2025-08-18",
+    bloqueado: true,
+    observacao: "Cobrança recorrente atrasada; bloqueio automático ativado.",
+  },
+  {
+    clinica_id: "clinic-004",
+    nome: "Atena Clínica Integrada",
+    status: "ativo",
+    implantacao: 6600,
+    mensalidade: 1180,
+    ultimaCobranca: "2025-08-02",
+    proximoVencimento: "2025-09-02",
+    bloqueado: false,
+    observacao: "Plano mensal em regra com baixa rotatividade.",
+  },
+];
 
 // (mantidos como placeholders)
 const prontuarios = [];
@@ -932,6 +978,100 @@ app.get("/api/admin/area", authRequired, requireRole("admin"), (req, res) => {
   });
 
   res.json({ ok: true, message: "Área admin liberada." });
+});
+
+app.get("/api/financeiro", authRequired, requireRole("superadmin"), (req, res) => {
+  const statusFiltro = String(req.query.status || "todos").trim().toLowerCase();
+  const query = String(req.query.q || "").trim().toLowerCase();
+
+  let lista = [...financeiroClientes];
+
+  if (statusFiltro !== "todos") {
+    lista = lista.filter((item) => String(item.status || "").toLowerCase() === statusFiltro);
+  }
+
+  if (query) {
+    lista = lista.filter((item) => {
+      const nome = String(item.nome || "").toLowerCase();
+      const clinicaId = String(item.clinica_id || "").toLowerCase();
+      return nome.includes(query) || clinicaId.includes(query);
+    });
+  }
+
+  const totalImplantacao = lista.reduce((sum, item) => sum + Number(item.implantacao || 0), 0);
+  const totalMensalidade = lista.reduce((sum, item) => sum + Number(item.mensalidade || 0), 0);
+  const totalAtivos = lista.filter((item) => String(item.status || "").toLowerCase() === "ativo").length;
+  const totalTrial = lista.filter((item) => String(item.status || "").toLowerCase() === "trial").length;
+  const totalInadimplentes = lista.filter((item) => String(item.status || "").toLowerCase() === "inadimplente").length;
+
+  auditAdd(req, {
+    acao: "read",
+    entidade: "financeiro",
+    detalhe: "Consulta do controle financeiro do superadmin",
+  });
+
+  return res.json({
+    ok: true,
+    items: lista,
+    resumo: {
+      totalImplantacao,
+      totalMensalidade,
+      totalAtivos,
+      totalTrial,
+      totalInadimplentes,
+    },
+  });
+});
+
+app.post("/api/financeiro/cobrancas", authRequired, requireRole("superadmin"), (req, res) => {
+  const hoje = new Date();
+  const geradas = financeiroClientes
+    .filter((item) => String(item.status || "").toLowerCase() !== "inadimplente")
+    .map((item) => {
+      item.ultimaCobranca = hoje.toISOString().slice(0, 10);
+      const proximo = new Date(hoje.getTime() + 30 * 24 * 60 * 60 * 1000);
+      item.proximoVencimento = proximo.toISOString().slice(0, 10);
+      item.status = "ativo";
+      item.bloqueado = false;
+      return item;
+    });
+
+  auditAdd(req, {
+    acao: "create",
+    entidade: "financeiro_cobrancas",
+    detalhe: "Cobranças recorrentes geradas",
+    meta: { total: geradas.length },
+  });
+
+  return res.status(201).json({ ok: true, total: geradas.length, items: geradas });
+});
+
+app.put("/api/financeiro/:clinicaId/status", authRequired, requireRole("superadmin"), (req, res) => {
+  const { clinicaId } = req.params;
+  const status = String(req.body?.status || "").trim().toLowerCase();
+
+  if (!status || !["trial", "ativo", "inadimplente"].includes(status)) {
+    return res.status(400).json({ ok: false, error: "Status inválido." });
+  }
+
+  const item = financeiroClientes.find((entry) => String(entry.clinica_id) === String(clinicaId));
+  if (!item) {
+    return res.status(404).json({ ok: false, error: "Clínica não encontrada." });
+  }
+
+  item.status = status;
+  item.bloqueado = status === "inadimplente";
+  item.updatedAt = new Date().toISOString();
+
+  auditAdd(req, {
+    acao: "update",
+    entidade: "financeiro_status",
+    entidadeId: clinicaId,
+    detalhe: "Status financeiro atualizado",
+    meta: { status },
+  });
+
+  return res.json({ ok: true, item });
 });
 
 // ================================

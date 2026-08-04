@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../Css/base.css" />
+  <link rel="stylesheet" href="../Css/super-admin.css" />
+  <link rel="stylesheet" href="../Css/controle-financeiro.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <title>Controle Financeiro - ProntoGest</title>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="icon">
+      <img src="../img/logo.png" class="logo-sidebar" />
+    </div>
+    <a href="./dashboard.html">Dashboard</a>
+    <a href="./super-admin.html">Cadastro de Cliente</a>
+    <a href="./controle-financeiro.html" class="is-active superadmin-only">Controle Financeiro</a>
+    <button class="btn-sair" onclick="logout()">Sair</button>
+  </aside>
+
+  <div class="content">
+    <h1>Controle Financeiro</h1>
+
+    <section class="card finance-summary-card">
+      <div class="finance-summary-grid">
+        <div class="summary-stat">
+          <span>Implantação total</span>
+          <strong id="totalImplantacao">R$ 0,00</strong>
+        </div>
+        <div class="summary-stat">
+          <span>Receita mensal</span>
+          <strong id="totalMensalidade">R$ 0,00</strong>
+        </div>
+        <div class="summary-stat">
+          <span>Ativos</span>
+          <strong id="totalAtivos">0</strong>
+        </div>
+        <div class="summary-stat">
+          <span>Trial</span>
+          <strong id="totalTrial">0</strong>
+        </div>
+        <div class="summary-stat warning">
+          <span>Inadimplentes</span>
+          <strong id="totalInadimplentes">0</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="card super-card finance-panel">
+      <div class="finance-toolbar">
+        <div class="toolbar-field">
+          <label for="filtroStatusFinanceiro">Status</label>
+          <select id="filtroStatusFinanceiro">
+            <option value="todos">Todos</option>
+            <option value="trial">Trial</option>
+            <option value="ativo">Ativo</option>
+            <option value="inadimplente">Inadimplente</option>
+          </select>
+        </div>
+
+        <div class="toolbar-field toolbar-field-search">
+          <label for="buscaFinanceiro">Buscar clínica</label>
+          <input id="buscaFinanceiro" type="text" placeholder="Nome ou cliente ID" />
+        </div>
+
+        <button id="btnGerarCobranca" class="btn btn-primary" type="button">Gerar cobrança recorrente</button>
+      </div>
+
+      <div id="financeiroLista" class="financeiro-lista"></div>
+    </section>
+  </div>
+
+  <script src="../Js/api.js"></script>
+  <script src="../Js/logout.js"></script>
+  <script src="../Js/auth-guard.js"></script>
+  <script src="../Js/menu-guard.js"></script>
+  <script src="../Js/controle-financeiro.js"></script>
+</body>
+</html>

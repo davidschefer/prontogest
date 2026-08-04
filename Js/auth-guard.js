@@ -55,6 +55,12 @@
          Controle por role
       --------------------------- */
 
+      if (page === "controle-financeiro.html" && role !== "superadmin") {
+        alert("Acesso restrito: somente o super admin pode acessar Controle Financeiro.");
+        redirectTo(DASHBOARD_PATH);
+        return;
+      }
+
       // Admin e Super Admin acessam tudo
       if (role === "admin" || role === "superadmin") return;
 

@@ -28,6 +28,14 @@
       }
     });
 
+    document.querySelectorAll(".superadmin-only").forEach((el) => {
+      if (!isSuperAdmin) {
+        el.style.setProperty("display", "none", "important");
+      } else {
+        el.style.removeProperty("display");
+      }
+    });
+
     // 🔒 Regra específica: medicamentos.html
     document.querySelectorAll('a[href*="medicamentos.html"]').forEach((el) => {
       if (!isAdmin && !isSuperAdmin) {
