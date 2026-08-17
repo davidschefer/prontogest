@@ -1110,6 +1110,13 @@ app.post("/api/pacientes", authRequired, async (req, res) => {
     return res.status(400).json({ ok: false, error: "Nome inválido" });
   }
 
+  if (fotoDataUrl && !String(fotoDataUrl).startsWith("data:image/")) {
+    return res.status(400).json({
+      ok: false,
+      error: "fotoDataUrl inválida. Formato esperado: data:image/...",
+    });
+  }
+
   if (cpf) {
     const cpfTrim = String(cpf).trim();
     const existe = pacientes.some((p) => p.cpf === cpfTrim);
@@ -1222,6 +1229,17 @@ app.put("/api/pacientes/:id", authRequired, async (req, res) => {
   const body = req.body || {};
   const end =
     body.endereco && typeof body.endereco === "object" ? body.endereco : {};
+
+  if (
+    body.fotoDataUrl !== undefined &&
+    body.fotoDataUrl &&
+    !String(body.fotoDataUrl).startsWith("data:image/")
+  ) {
+    return res.status(400).json({
+      ok: false,
+      error: "fotoDataUrl inválida. Formato esperado: data:image/...",
+    });
+  }
 
   pacientes[idx] = {
     ...pacientes[idx],

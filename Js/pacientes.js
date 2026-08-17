@@ -152,7 +152,7 @@
     const pane = document.getElementById("pacienteFotoPreview");
     if (!pane) return;
     if (pacienteFotoDataUrl) {
-      pane.innerHTML = `<img src="${pacienteFotoDataUrl}" alt="Foto do paciente">`;
+      pane.innerHTML = `<img src="${escapeHtml(pacienteFotoDataUrl)}" alt="Foto do paciente">`;
     } else {
       pane.innerHTML = `<span>Sem foto</span>`;
     }
