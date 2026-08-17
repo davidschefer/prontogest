@@ -727,9 +727,6 @@ app.post("/api/login", async (req, res) => {
     });
   }
 
-  // 1) Admin fixo (MVP)
-  // 2) Funcionário fixo (MVP antigo) — mantém compatibilidade
-
   // 3) Funcionários cadastrados via /api/funcionarios (memória)
   // Compatibilidade superadmin
   const SUPERADMIN_EMAIL = normalizarEmail(process.env.SUPERADMIN_EMAIL);
@@ -3225,6 +3222,15 @@ app.delete("/api/funcionarios/:id", authRequired, requireRole("admin"), async (r
   });
 
   return res.status(204).end();
+});
+
+// ================================
+// Handler de erro genérico (Express)
+// ================================
+
+app.use((err, req, res, next) => {
+  console.error("Erro não tratado:", err);
+  res.status(500).json({ ok: false, error: "Erro interno do servidor" });
 });
 
 // ================================
