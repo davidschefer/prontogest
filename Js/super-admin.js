@@ -336,6 +336,53 @@
     items.forEach((c) => root.appendChild(montarCardClinica(c)));
   }
 
+  function ensureEditAdminModal() {
+    let modal = document.getElementById("editAdminModal");
+    if (modal) return modal;
+
+    modal = document.createElement("div");
+    modal.id = "editAdminModal";
+    modal.className = "assist-modal";
+    modal.innerHTML = `
+      <div class="assist-modal-card" role="dialog" aria-modal="true" aria-labelledby="editAdminModalTitle">
+        <h3 id="editAdminModalTitle">Editar administrador</h3>
+        <div class="grid-2">
+          <label for="editAdminNome">Nome
+            <input id="editAdminNome" type="text" />
+          </label>
+          <label for="editAdminEmail">Email
+            <input id="editAdminEmail" type="email" />
+          </label>
+          <label for="editAdminStatus">Status
+            <select id="editAdminStatus">
+              <option value="ativo">ativo</option>
+              <option value="inativo">inativo</option>
+            </select>
+          </label>
+          <label for="editAdminSenha">Nova senha
+            <input id="editAdminSenha" type="password" />
+          </label>
+        </div>
+        <p class="logo-file-status">Deixe em branco para manter a senha atual</p>
+        <p id="editAdminErro" class="logo-file-status error" hidden></p>
+        <div class="assist-modal-actions">
+          <button type="button" class="btn btn-cancelar-edicao" id="editAdminCancelar">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="editAdminSalvar">Salvar</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    modal.addEventListener("click", (ev) => {
+      if (ev.target === modal) modal.classList.remove("is-open");
+    });
+    modal.querySelector("#editAdminCancelar")?.addEventListener("click", () => {
+      modal.classList.remove("is-open");
+    });
+
+    return modal;
+  }
+
   function montarLinhaAdmin(admin, clinica_id) {
     const item = document.createElement("div");
     item.className = "admin-item";
@@ -355,36 +402,58 @@
 
     const btnEdit = item.querySelector("button[data-admin-edit]");
     if (btnEdit) {
-      btnEdit.addEventListener("click", async function () {
-        const novoNome = window.prompt("Nome do administrador:", String(admin?.nome || ""));
-        if (novoNome === null) return;
-        const novoEmail = window.prompt("Email do administrador:", String(admin?.email || ""));
-        if (novoEmail === null) return;
-        const novoStatus = window.prompt("Status (ativo/inativo):", String(admin?.status || "ativo"));
-        if (novoStatus === null) return;
-        const novaSenha = window.prompt("Nova senha (deixe em branco para manter a atual):", "");
-        if (novaSenha === null) return;
+      btnEdit.addEventListener("click", function () {
+        const modal = ensureEditAdminModal();
+        const nomeInput = modal.querySelector("#editAdminNome");
+        const emailInput = modal.querySelector("#editAdminEmail");
+        const statusSelect = modal.querySelector("#editAdminStatus");
+        const senhaInput = modal.querySelector("#editAdminSenha");
+        const erroEl = modal.querySelector("#editAdminErro");
+        const salvarBtn = modal.querySelector("#editAdminSalvar");
 
-        const payload = {
-          nome: String(novoNome || "").trim(),
-          email: String(novoEmail || "").trim(),
-          status: String(novoStatus || "").trim() || "ativo",
-        };
-        if (String(novaSenha || "").trim()) {
-          payload.senha = String(novaSenha);
+        if (nomeInput) nomeInput.value = String(admin?.nome || "");
+        if (emailInput) emailInput.value = String(admin?.email || "");
+        if (statusSelect) statusSelect.value = String(admin?.status || "ativo");
+        if (senhaInput) senhaInput.value = "";
+        if (erroEl) {
+          erroEl.textContent = "";
+          erroEl.hidden = true;
         }
 
-        if (!payload.nome || !payload.email) {
-          alert("Nome e email são obrigatórios.");
-          return;
+        if (salvarBtn) {
+          salvarBtn.onclick = async function () {
+            const payload = {
+              nome: String(nomeInput?.value || "").trim(),
+              email: String(emailInput?.value || "").trim(),
+              status: String(statusSelect?.value || "").trim() || "ativo",
+            };
+            const novaSenha = String(senhaInput?.value || "");
+            if (novaSenha.trim()) {
+              payload.senha = novaSenha;
+            }
+
+            if (!payload.nome || !payload.email) {
+              if (erroEl) {
+                erroEl.textContent = "Nome e email são obrigatórios.";
+                erroEl.hidden = false;
+              }
+              return;
+            }
+
+            try {
+              await apiUpdateAdmin(clinica_id, String(admin?.id || ""), payload);
+              await carregarAdmins();
+              modal.classList.remove("is-open");
+            } catch (err) {
+              if (erroEl) {
+                erroEl.textContent = "Falha ao editar administrador: " + String(err?.message || err);
+                erroEl.hidden = false;
+              }
+            }
+          };
         }
 
-        try {
-          await apiUpdateAdmin(clinica_id, String(admin?.id || ""), payload);
-          await carregarAdmins();
-        } catch (err) {
-          alert("Falha ao editar administrador: " + String(err?.message || err));
-        }
+        modal.classList.add("is-open");
       });
     }
 
