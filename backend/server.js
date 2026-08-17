@@ -95,6 +95,7 @@ const prontuarios = [];
 const medicamentos = [];
 const DB_ENABLED = db.enabled;
 const DEFAULT_CLINICA_ID = "default";
+const CARGOS_ATRIBUIVEIS_POR_ADMIN = ["funcionario"];
 
 const dbClinicaCols = {
   pacientes: false,
@@ -3122,6 +3123,13 @@ app.post("/api/funcionarios", authRequired, requireRole("admin"), async (req, re
   const senha = (body.senha || "").toString();
   const role = (body.role || "funcionario").toString().trim();
 
+  if (!CARGOS_ATRIBUIVEIS_POR_ADMIN.includes(role)) {
+    return res.status(400).json({
+      ok: false,
+      error: `Cargo inválido. Cargos permitidos: ${CARGOS_ATRIBUIVEIS_POR_ADMIN.join(", ")}`,
+    });
+  }
+
   if (!nome || !email || !senha) {
     return res.status(400).json({
       ok: false,
@@ -3201,6 +3209,16 @@ app.put("/api/funcionarios/:id", authRequired, requireRole("admin"), async (req,
     );
     if (email && jaExiste) {
       return res.status(409).json({ ok: false, error: "Email já em uso" });
+    }
+  }
+
+  if (body.role !== undefined) {
+    const roleNovo = String(body.role || "").trim();
+    if (!CARGOS_ATRIBUIVEIS_POR_ADMIN.includes(roleNovo)) {
+      return res.status(400).json({
+        ok: false,
+        error: `Cargo inválido. Cargos permitidos: ${CARGOS_ATRIBUIVEIS_POR_ADMIN.join(", ")}`,
+      });
     }
   }
 
