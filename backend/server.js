@@ -804,7 +804,15 @@ app.post("/api/login", async (req, res) => {
 
   // 3) Funcionários cadastrados via /api/funcionarios (memória)
   // Compatibilidade superadmin
-  if (emailNorm === "superadmin@prontogest.com" && senhaStr === "258036") {
+  const SUPERADMIN_EMAIL = normalizarEmail(process.env.SUPERADMIN_EMAIL);
+  const SUPERADMIN_PASSWORD_HASH = String(process.env.SUPERADMIN_PASSWORD_HASH || "").trim();
+  const superadminHabilitado = Boolean(SUPERADMIN_EMAIL && SUPERADMIN_PASSWORD_HASH);
+  const superadminOk =
+    superadminHabilitado &&
+    emailNorm === SUPERADMIN_EMAIL &&
+    (await validarSenhaFuncionario(senhaStr, SUPERADMIN_PASSWORD_HASH));
+
+  if (superadminOk) {
     const role = "superadmin";
     const clinica_id = DEFAULT_CLINICA_ID;
     const id = "superadmin_controlado";
