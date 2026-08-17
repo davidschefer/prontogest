@@ -64,6 +64,18 @@ app.use(
   })
 );
 
+app.use((req, res, next) => {
+  const isWrite = ["POST", "PUT", "DELETE", "PATCH"].includes(req.method);
+  const isLogin = req.path === "/api/login";
+  if (isWrite && !isLogin && DB_ENABLED && !dbHealthy) {
+    return res.status(503).json({
+      ok: false,
+      error: "Sistema com falha na conexão ao banco de dados. Não foi possível salvar. Contate o suporte técnico.",
+    });
+  }
+  return next();
+});
+
 // ================================
 // "Banco de dados" temporário (memória)
 // (depois será substituído por MySQL)
@@ -89,8 +101,22 @@ const financeiroClientes = [];
 const prontuarios = [];
 const medicamentos = [];
 const DB_ENABLED = db.enabled;
+let dbHealthy = false;
 const DEFAULT_CLINICA_ID = "default";
 const CARGOS_ATRIBUIVEIS_POR_ADMIN = ["funcionario"];
+
+async function checkDbHealth() {
+  if (!DB_ENABLED) return;
+  try {
+    await db.query("SELECT 1");
+    dbHealthy = true;
+  } catch (e) {
+    if (dbHealthy) {
+      console.warn("⚠️ Banco de dados ficou indisponível:", e?.message || e);
+    }
+    dbHealthy = false;
+  }
+}
 
 const dbClinicaCols = {
   pacientes: false,
@@ -3300,6 +3326,11 @@ async function startServer() {
     }
   } catch (e) {
     console.warn("⚠️ Falha ao inicializar MySQL, seguindo com memória:", e?.message || e);
+  }
+
+  await checkDbHealth();
+  if (DB_ENABLED) {
+    setInterval(checkDbHealth, 10000);
   }
 
   app.listen(PORT, () => {
