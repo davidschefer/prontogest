@@ -499,6 +499,12 @@ function parseNumeroFlex(v) {
   return Number.isFinite(n) ? n : null;
 }
 
+function tamanhoBase64EmBytes(dataUrl) {
+  const str = String(dataUrl || "");
+  const base64 = str.split(",")[1] || "";
+  return Math.floor((base64.length * 3) / 4);
+}
+
 function pacienteExistePorId(pacienteId, clinicaId) {
   const pid = String(pacienteId || "").trim();
   if (!pid) return false;
@@ -1041,6 +1047,26 @@ app.post("/api/pacientes", authRequired, async (req, res) => {
     });
   }
 
+  if (fotoDataUrl && tamanhoBase64EmBytes(fotoDataUrl) > 2 * 1024 * 1024) {
+    return res.status(400).json({
+      ok: false,
+      error: "Foto muito grande. Máximo 2 MB.",
+    });
+  }
+
+  if (Array.isArray(documentosPaciente)) {
+    const documentoGrande = documentosPaciente.some(
+      (doc) =>
+        tamanhoBase64EmBytes(doc?.arquivoBase64 || doc?.url) > 5 * 1024 * 1024
+    );
+    if (documentoGrande) {
+      return res.status(400).json({
+        ok: false,
+        error: "Documento muito grande. Máximo 5 MB.",
+      });
+    }
+  }
+
   if (cpf) {
     const cpfTrim = String(cpf).trim();
     const existe = pacientes.some((p) => p.cpf === cpfTrim);
@@ -1163,6 +1189,30 @@ app.put("/api/pacientes/:id", authRequired, async (req, res) => {
       ok: false,
       error: "fotoDataUrl inválida. Formato esperado: data:image/...",
     });
+  }
+
+  if (
+    body.fotoDataUrl !== undefined &&
+    body.fotoDataUrl &&
+    tamanhoBase64EmBytes(body.fotoDataUrl) > 2 * 1024 * 1024
+  ) {
+    return res.status(400).json({
+      ok: false,
+      error: "Foto muito grande. Máximo 2 MB.",
+    });
+  }
+
+  if (Array.isArray(body.documentosPaciente)) {
+    const documentoGrande = body.documentosPaciente.some(
+      (doc) =>
+        tamanhoBase64EmBytes(doc?.arquivoBase64 || doc?.url) > 5 * 1024 * 1024
+    );
+    if (documentoGrande) {
+      return res.status(400).json({
+        ok: false,
+        error: "Documento muito grande. Máximo 5 MB.",
+      });
+    }
   }
 
   pacientes[idx] = {
