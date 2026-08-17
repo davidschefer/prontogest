@@ -20,9 +20,6 @@ if (!JWT_SECRET) {
   console.error("JWT_SECRET não definido");
   process.exit(1);
 }
-const MODO_DEMO =
-  Object.prototype.hasOwnProperty.call(process.env, "MODO_DEMO") &&
-  process.env.MODO_DEMO === "true";
 
 // ================================
 // Middlewares globais
@@ -731,75 +728,7 @@ app.post("/api/login", async (req, res) => {
   }
 
   // 1) Admin fixo (MVP)
-  if (MODO_DEMO && emailNorm === "admin@oaa.com" && senhaStr === "123456") {
-    const role = "admin";
-    const clinica_id = DEFAULT_CLINICA_ID;
-    const id = "admin";
-
-    const token = jwt.sign({ email: emailNorm, role, clinica_id, id }, JWT_SECRET, {
-      expiresIn: "8h",
-    });
-    loginRateLimitClear(req, emailNorm);
-
-    // ✅ AUDITORIA: login OK
-    auditAdd(req, {
-      acao: "login",
-      entidade: "auth",
-      detalhe: "Login efetuado com sucesso (admin fixo)",
-      usuario: String(emailNorm),
-      role: String(role),
-      meta: { email: String(emailNorm), role: String(role) },
-    });
-
-    return res.json({
-      ok: true,
-      role,
-      email: emailNorm,
-      token,
-      clinica_id,
-      id,
-
-      // dados para UI (opcional)
-      nome: "Administrador",
-      orgao: "",
-      registro: "",
-      carimbo: null,
-    });
-  }
-
   // 2) Funcionário fixo (MVP antigo) — mantém compatibilidade
-  if (MODO_DEMO && emailNorm === "func@oaa.com" && senhaStr === "123456") {
-    const role = "funcionario";
-    const clinica_id = DEFAULT_CLINICA_ID;
-    const id = "funcionario_fix";
-
-    const token = jwt.sign({ email: emailNorm, role, clinica_id, id }, JWT_SECRET, {
-      expiresIn: "8h",
-    });
-    loginRateLimitClear(req, emailNorm);
-
-    auditAdd(req, {
-      acao: "login",
-      entidade: "auth",
-      detalhe: "Login efetuado com sucesso (funcionário fixo)",
-      usuario: String(emailNorm),
-      role: String(role),
-      meta: { email: String(emailNorm), role: String(role) },
-    });
-
-    return res.json({
-      ok: true,
-      role,
-      email: emailNorm,
-      token,
-
-      // dados para UI (opcional)
-      nome: "Funcionário",
-      orgao: "",
-      registro: "",
-      carimbo: null,
-    });
-  }
 
   // 3) Funcionários cadastrados via /api/funcionarios (memória)
   // Compatibilidade superadmin
