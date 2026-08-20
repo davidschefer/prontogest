@@ -97,6 +97,7 @@ module.exports = function createSuperAdminRouter(deps) {
       logo: String(item?.logo || "").trim(),
       responsavel: String(item?.responsavel || "").trim(),
       status: String(item?.status || "ativo").trim() || "ativo",
+      trial_expires_at: item?.trial_expires_at ? String(item.trial_expires_at) : null,
       modulos,
       personalizacao,
       createdAt: String(item?.createdAt || new Date().toISOString()),
@@ -117,6 +118,7 @@ module.exports = function createSuperAdminRouter(deps) {
         email VARCHAR(140) NULL,
         responsavel VARCHAR(140) NULL,
         status VARCHAR(20) NOT NULL DEFAULT 'ativo',
+        trial_expires_at VARCHAR(30) NULL,
         logo LONGTEXT NULL,
         modulos LONGTEXT NULL,
         personalizacao LONGTEXT NULL,
@@ -125,6 +127,10 @@ module.exports = function createSuperAdminRouter(deps) {
         INDEX idx_clinicas_clinica_id (clinica_id)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`
     );
+    // Migração leve para bancos já existentes de antes da coluna trial_expires_at.
+    try {
+      await db.query("ALTER TABLE clinicas ADD COLUMN trial_expires_at VARCHAR(30) NULL");
+    } catch {}
     clinicasTableReady = true;
   }
 
@@ -150,8 +156,8 @@ module.exports = function createSuperAdminRouter(deps) {
     if (!dbEnabled) return;
     await ensureClinicasTable();
     const c = normalizeClinicaRecord(item);
-    const sql = `INSERT INTO clinicas (id, clinica_id, nome, cnpj, endereco, telefone, email, responsavel, status, logo, modulos, personalizacao, createdAt, updatedAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    const sql = `INSERT INTO clinicas (id, clinica_id, nome, cnpj, endereco, telefone, email, responsavel, status, trial_expires_at, logo, modulos, personalizacao, createdAt, updatedAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON DUPLICATE KEY UPDATE
       nome=VALUES(nome),
       cnpj=VALUES(cnpj),
@@ -160,6 +166,7 @@ module.exports = function createSuperAdminRouter(deps) {
       email=VALUES(email),
       responsavel=VALUES(responsavel),
       status=VALUES(status),
+      trial_expires_at=VALUES(trial_expires_at),
       logo=VALUES(logo),
       modulos=VALUES(modulos),
       personalizacao=VALUES(personalizacao),
@@ -174,6 +181,7 @@ module.exports = function createSuperAdminRouter(deps) {
       c.email,
       c.responsavel,
       c.status,
+      c.trial_expires_at,
       c.logo,
       toJsonSafe(c.modulos, createDefaultModules()),
       toJsonSafe(c.personalizacao, {}),
@@ -289,6 +297,7 @@ module.exports = function createSuperAdminRouter(deps) {
       logo: String(body.logo || "").trim(),
       responsavel: String(body.responsavel || "").trim(),
       status: String(body.status || "ativo").trim() || "ativo",
+      trial_expires_at: body.trial_expires_at ? String(body.trial_expires_at) : null,
       modulos: {
         ...createDefaultModules(),
         ...(body.modulos && typeof body.modulos === "object" ? body.modulos : {}),
@@ -409,6 +418,8 @@ module.exports = function createSuperAdminRouter(deps) {
     clinica.email = String(body.email !== undefined ? body.email : clinica.email || "").trim();
     clinica.responsavel = String(body.responsavel !== undefined ? body.responsavel : clinica.responsavel || "").trim();
     clinica.status = String(body.status !== undefined ? body.status : clinica.status || "ativo").trim() || "ativo";
+    clinica.trial_expires_at =
+      body.trial_expires_at !== undefined ? (body.trial_expires_at ? String(body.trial_expires_at) : null) : clinica.trial_expires_at || null;
     clinica.logo = String(body.logo !== undefined ? body.logo : clinica.logo || "").trim();
 
     clinica.personalizacao = {

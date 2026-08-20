@@ -206,6 +206,20 @@ const schemaStatements = [
     dataHoraISO VARCHAR(30),
     INDEX idx_farmacia_movimentos_clinica (clinica_id)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+  `CREATE TABLE IF NOT EXISTS leads (
+    id VARCHAR(64) PRIMARY KEY,
+    nome VARCHAR(120),
+    instituicao VARCHAR(160),
+    tipo VARCHAR(60),
+    whatsapp VARCHAR(30),
+    interesse VARCHAR(30),
+    origem VARCHAR(60),
+    status VARCHAR(30) NOT NULL DEFAULT 'novo',
+    observacao TEXT,
+    createdAt VARCHAR(30),
+    updatedAt VARCHAR(30),
+    INDEX idx_leads_status (status)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
   `CREATE TABLE IF NOT EXISTS auditoria (
     id VARCHAR(64) PRIMARY KEY,
     clinica_id VARCHAR(64) NOT NULL DEFAULT 'default',

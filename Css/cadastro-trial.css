@@ -1,0 +1,46 @@
+@charset "UTF-8";
+
+.trial-sucesso-box {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid #bfe3c8;
+  border-radius: 12px;
+  background: #f2fbf4;
+  color: #1f5130;
+}
+
+.trial-sucesso-box p {
+  margin: 0 0 6px;
+}
+
+.trial-sucesso-box strong {
+  color: #1f7a36;
+}
+
+.trial-sucesso-box button {
+  margin-top: 8px;
+}
+
+.trial-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-left: 8px;
+}
+
+.trial-badge.ok {
+  background: #e4f4e8;
+  color: #1f7a36;
+}
+
+.trial-badge.warn {
+  background: #fff3d6;
+  color: #8a5a00;
+}
+
+.trial-badge.expired {
+  background: #fde3e1;
+  color: #b42318;
+}

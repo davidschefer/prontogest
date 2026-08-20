@@ -11,6 +11,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const db = require("./db");
 const createSuperAdminRouter = require("./routes/superadmin");
+const createLeadsRouter = require("./routes/leads");
 const superAdminRuntime = {};
 
 const app = express();
@@ -1008,6 +1009,21 @@ app.use(
     DEFAULT_CLINICA_ID,
     persistFuncionario,
     runtime: superAdminRuntime,
+    db,
+    dbEnabled: DB_ENABLED,
+  })
+);
+
+// ================================
+// ✅ LEADS — captura pública vinda da landing page
+// ================================
+app.use(
+  "/api",
+  createLeadsRouter({
+    authRequired,
+    requireRole,
+    makeId,
+    auditAdd,
     db,
     dbEnabled: DB_ENABLED,
   })

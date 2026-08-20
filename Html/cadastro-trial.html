@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../Css/base.css" />
+  <link rel="stylesheet" href="../Css/super-admin.css" />
+  <link rel="stylesheet" href="../Css/cadastro-trial.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <title>Cadastro Trial - ProntoGest</title>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="icon">
+      <img src="../img/logo.png" class="logo-sidebar" />
+    </div>
+    <a href="./dashboard.html">Dashboard</a>
+    <a href="./super-admin.html" class="superadmin-only">Cadastro de Cliente</a>
+    <a href="./cadastro-trial.html" class="is-active superadmin-only">Cadastro Trial</a>
+    <a href="./leads.html" class="superadmin-only">Leads</a>
+    <a href="./controle-financeiro.html" class="superadmin-only">Controle Financeiro</a>
+    <button class="btn-sair" onclick="logout()">Sair</button>
+  </aside>
+
+  <div class="content">
+    <h1>Cadastro Trial</h1>
+
+    <section class="card super-card">
+      <h2>Novo acesso de teste</h2>
+      <form id="formTrial" class="grid-2">
+        <input id="trialNome" placeholder="Nome da instituição" required />
+        <input id="trialId" placeholder="clinica_id (gerado automaticamente)" required />
+        <input id="trialResponsavel" placeholder="Responsável" />
+        <input id="trialTelefone" placeholder="WhatsApp / Telefone" />
+        <input id="trialEmail" type="email" placeholder="Email (também será o login)" required />
+        <select id="trialDias">
+          <option value="7">7 dias de trial</option>
+          <option value="14" selected>14 dias de trial</option>
+          <option value="30">30 dias de trial</option>
+        </select>
+        <input id="trialSenha" placeholder="Senha de acesso (gerada automaticamente)" required />
+        <button class="btn btn-primary" type="submit">Criar acesso trial</button>
+      </form>
+
+      <div id="trialSucesso" class="trial-sucesso-box" hidden>
+        <p><strong>Trial criado!</strong> Envie esses dados de acesso para o cliente:</p>
+        <p>Link: <span id="trialSucessoLink"></span></p>
+        <p>Email: <span id="trialSucessoEmail"></span></p>
+        <p>Senha: <span id="trialSucessoSenha"></span></p>
+        <p>Expira em: <span id="trialSucessoData"></span></p>
+        <button id="btnCopiarTrial" class="btn btn-primary" type="button">Copiar mensagem pronta</button>
+      </div>
+    </section>
+
+    <section class="card super-card">
+      <h2>Trials ativos</h2>
+      <div id="listaTrials" class="lista-clinicas"></div>
+    </section>
+  </div>
+
+  <script src="../Js/api.js"></script>
+  <script src="../Js/logout.js"></script>
+  <script src="../Js/auth-guard.js"></script>
+  <script src="../Js/menu-guard.js"></script>
+  <script src="../Js/cadastro-trial.js"></script>
+</body>
+</html>
